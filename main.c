@@ -24,7 +24,7 @@
     #define DISCHARGE_EN LATDbits.LATD5 //Discharge Enable Pin
     #define CHARGE_EN  LATDbits.LATD4 //Charge Enable Pin
     #define CHARGE_SWITCH PORTAbits.RA0
-    #define uartLines 20
+    #define uartLines 21
 
 //Prototypes
     void setup();
@@ -51,11 +51,10 @@
     
 //Main
 void main(void){
-
+    
     setup();
     DISCHARGE_EN = 0; //Defaults to charge and discharge circuits being off
     CHARGE_EN = 0; 
-    NOP();
     /* 
     if(CHARGE_SWITCH == 1 ){
         CHARGE_EN = startUp();   //If startup check is okay, enable charging
@@ -63,32 +62,26 @@ void main(void){
         DISCHARGE_EN = startUp();               //If startup check is okay, enable discharging
     }
     */
-   /*8 int address;
-    __delay_ms(1000);
-    
-    address= 0x27;
-    address = 0x27 <<1;
-    i2cStart();
-    i2cWrite(address); //address
-    i2cWrite(0x00);
-    i2cWrite(0x08); //turn on
-    i2cStop();
-    */
     
     while(1){
         
+        i2cSwitch();
+        //send i2c data
         LATAbits.LATA5 ^= 1;
-        __delay_ms(1000);
+        //__delay_ms(1000);
      
+        //send spi data
+        spiSwitch();
         measureVoltages(voltages, numVoltages); // Voltages 
         totalVoltage = sumVoltages(voltages, numVoltages); 
+        
+        
+        
 
         highestTemp = getTemps(temps, numTemps); // Temperatures
-        
         if(currentBool == 1){ //Add current to buffer
             currentBuff[currentIndex] = getCurrent();
             currentIndex ++;
-            
             if(currentIndex >= numCurrent){ //Average buffer to get finalized current value
                 current = avgBuff(currentBuff, currentIndex);
                 currentIndex = 0;
@@ -105,7 +98,7 @@ void main(void){
  
 //Calculates initial SOC on startup and does the following startup checks
 //open circuit for voltage sense, short circuit for current sense
-// and open circuit temperature sense)
+// and open circuit temperature sense
 int startUp(){
     /*highestTemp = getTemps(temps, numTemps);
     for(int i = 0; i < numTemps; i++){
@@ -200,12 +193,19 @@ void setup(void){
         uartSetup();
         
     //I2C
-       i2cSetup();
+        TRISBbits.TRISB6 = 1; //i2c requires these be inputs
+        TRISBbits.TRISB7 = 1; //i2c requires these be inputs
+        i2cSetup();
    
     //SPI: PIC is Master -> LTC6804-2 is Slave
-    //   spiSetup();
-        
+       TRISCbits.TRISC5 = 0; //Data Out Line
+       TRISCbits.TRISC4 = 1; //Data In Line
+       TRISCbits.TRISC3 = 0; //Driving Clock Line
+       TRISDbits.TRISD3 = 0; //CS Pin -- Active when pulled to ground
+       spiSetup();
+
     //LTC
-    //   LTC6804_initialize();
-        
+    LTC6804_initialize();
+
+       
 }
