@@ -9504,9 +9504,10 @@ char spi_read(char data);
 void spiSwitch();
 
 # 10 "ltc6804.h"
-void measureVoltages(float measurements[], int numVoltages);
-float sumVoltages(float values[], int numVoltages);
-
+void measureVoltages(float voltages[], int numVoltages);
+float sumVoltages(float voltages[], int numVoltages);
+void setDischarge(int index, char boolean);
+void cellBalancing(float voltages[], int numVoltages);
 
 static const unsigned int crc15Table[256] = {0x0, 0xc599, 0xceab, 0xb32, 0xd8cf, 0x1d56, 0x1664, 0xd3fd, 0xf407, 0x319e, 0x3aac,
 0xff35, 0x2cc8, 0xe951, 0xe263, 0x27fa, 0xad97, 0x680e, 0x633c, 0xa6a5, 0x7558, 0xb0c1,
@@ -9532,7 +9533,7 @@ static const unsigned int crc15Table[256] = {0x0, 0xc599, 0xceab, 0xb32, 0xd8cf,
 0x2d02, 0xa76f, 0x62f6, 0x69c4, 0xac5d, 0x7fa0, 0xba39, 0xb10b, 0x7492, 0x5368, 0x96f1, 0x9dc3,
 0x585a, 0x8ba7, 0x4e3e, 0x450c, 0x8095};
 
-# 135
+# 136
 void LTC6804_initialize();
 
 void set_adc(char MD, char DCP, char CH, char CHG);
@@ -9877,37 +9878,54 @@ float temp;
 
 int SOC = 0;
 
+int minVoltage;
 
 
 void main(void){
 
+int numFaults = 0;
+
+
 setup();
+
+_delay((unsigned long)((1000)*(32000000/4000.0)));
+
 LATDbits.LATD5 = 0;
 LATDbits.LATD4 = 0;
 
-# 66
+LATDbits.LATD5 = 1;
+
+# 79
 while(1){
 
-i2cSwitch();
-
 LATAbits.LATA5 ^= 1;
-
-
-
-spiSwitch();
 measureVoltages(voltages, 12);
+
 totalVoltage = sumVoltages(voltages, 12);
 
 
 
 
-highestTemp = getTemps(temps, 5);
+for(int i = 0; i <5; i++){
+if(temps[i] >= 40 || temps[i] <= 10){
+numFaults++;
+}
+}
 
+if(current >= 10){
+numFaults++;
+}
+
+if(numFaults >= 10){
+LATDbits.LATD5 = 0;
+}
+
+highestTemp = getTemps(temps, 5);
 if(currentBool == 1){
 currentBuff[currentIndex] = getCurrent();
 currentIndex ++;
-
 if(currentIndex >= 20){
+cellBalancing(voltages, 12);
 current = avgBuff(currentBuff, currentIndex);
 currentIndex = 0;
 }
@@ -9925,8 +9943,16 @@ uartBool = 0;
 
 
 int startUp(){
+highestTemp = getTemps(temps, 5);
+for(int i = 0; i < 5; i++){
+if(temps[i] < 5 || temps[i] > 40){
 
-# 115
+
+
+return 0;
+}
+}
+
 current = getCurrent();
 if(current < -2 || current > 2){
 
@@ -9935,7 +9961,7 @@ return 0;
 
 measureVoltages(voltages, 12);
 for(int i = 0; i < 12; i++){
-if(voltages[i] > 4.5 || voltages[i] < 3.2){
+if(voltages[i] > 4.2 || voltages[i] < 3.1){
 
 return 0;
 }

@@ -12,6 +12,7 @@
       <itemPath>SSD1306.h</itemPath>
       <itemPath>ltc6804.h</itemPath>
       <itemPath>spi.h</itemPath>
+      <itemPath>hd44780.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -28,6 +29,7 @@
       <itemPath>SSD1306.c</itemPath>
       <itemPath>ltc6804.c</itemPath>
       <itemPath>spi.c</itemPath>
+      <itemPath>hd44780.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -154,7 +156,6 @@
                   value="Press to browse for a specific firmware version"/>
         <property key="ToolFirmwareOption.UseLatestFirmware" value="true"/>
         <property key="debugoptions.useswbreakpoints" value="false"/>
-        <property key="firmware.download.all" value="false"/>
         <property key="hwtoolclock.frcindebug" value="false"/>
         <property key="memories.aux" value="false"/>
         <property key="memories.bootflash" value="true"/>

@@ -48,13 +48,22 @@
     
     int SOC = 0; //SOC Percentage out of 100
     
-    
+    int minVoltage;
+
 //Main
 void main(void){
     
+    int numFaults = 0;
+    
+    
     setup();
+    
+    __delay_ms(1000);
+    
     DISCHARGE_EN = 0; //Defaults to charge and discharge circuits being off
     CHARGE_EN = 0; 
+    
+    DISCHARGE_EN = 1;
     /* 
     if(CHARGE_SWITCH == 1 ){
         CHARGE_EN = startUp();   //If startup check is okay, enable charging
@@ -62,27 +71,41 @@ void main(void){
         DISCHARGE_EN = startUp();               //If startup check is okay, enable discharging
     }
     */
+    //{0x00, 0x90, 0x1F, 0xC4, 0x00, 0x90} //GPIO/REFON/SWTRD/ADC0PT OFF, UV=3.1, OV=4.2, DCC[1-12] = OFF, DCTO = 20min
+    //UV: 0b011110010000
+    //OV: 0b101001000001
+
     
     while(1){
         
-        i2cSwitch();
-        //send i2c data
         LATAbits.LATA5 ^= 1;
-        //__delay_ms(1000);
-     
-        //send spi data
-        spiSwitch();
         measureVoltages(voltages, numVoltages); // Voltages 
+        
         totalVoltage = sumVoltages(voltages, numVoltages); 
         
         
         
+        
+        for(int i = 0; i <numTemps; i++){
+            if(temps[i] >= 40 || temps[i] <= 10){
+                numFaults++;
+            }
+        }
+        
+        if(current >= 10){
+            numFaults++;
+        }
+        
+        if(numFaults >= 10){
+            DISCHARGE_EN = 0;
+        }
 
         highestTemp = getTemps(temps, numTemps); // Temperatures
         if(currentBool == 1){ //Add current to buffer
             currentBuff[currentIndex] = getCurrent();
             currentIndex ++;
             if(currentIndex >= numCurrent){ //Average buffer to get finalized current value
+                cellBalancing(voltages, numVoltages); //Balance cells
                 current = avgBuff(currentBuff, currentIndex);
                 currentIndex = 0;
             }
@@ -100,15 +123,15 @@ void main(void){
 //open circuit for voltage sense, short circuit for current sense
 // and open circuit temperature sense
 int startUp(){
-    /*highestTemp = getTemps(temps, numTemps);
+    highestTemp = getTemps(temps, numTemps);
     for(int i = 0; i < numTemps; i++){
-        if(temps[i] < 5 || temps[i] > 50){
+        if(temps[i] < 5 || temps[i] > 40){
             //Two Possibilities:
             //Open circuit temp sensor -- do not allow battery to charge or discharge
             //Batteries are too hot -- possible short circuit
             return 0;
         }
-    }*/
+    }
     
     current = getCurrent();
     if(current < -2 || current > 2){
@@ -118,7 +141,7 @@ int startUp(){
     
     measureVoltages(voltages, numVoltages);
     for(int i = 0; i < numVoltages; i++){
-        if(voltages[i] > 4.5 || voltages[i] < 3.2){
+        if(voltages[i] > 4.2 || voltages[i] < 3.1){
             //Batteries are over or under charged
             return 0;
         }

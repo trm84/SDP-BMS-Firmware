@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project>
-  <executable name="dist/default/production\SDP_BMS.X.production.hex">
+  <executable name="dist/default/production\SDP-BMS-Firmware.production.hex">
     <memory name="program">
       <units>words</units>
       <length>16384</length>
-      <used>11133</used>
-      <free>5251</free>
+      <used>11846</used>
+      <free>4538</free>
     </memory>
     <memory name="data">
       <units>bytes</units>
       <length>2048</length>
-      <used>494</used>
-      <free>1554</free>
+      <used>521</used>
+      <free>1527</free>
     </memory>
   </executable>
 </project>

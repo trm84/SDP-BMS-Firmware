@@ -9588,9 +9588,10 @@ char spi_read(char data);
 void spiSwitch();
 
 # 10 "ltc6804.h"
-void measureVoltages(float measurements[], int numVoltages);
-float sumVoltages(float values[], int numVoltages);
-
+void measureVoltages(float voltages[], int numVoltages);
+float sumVoltages(float voltages[], int numVoltages);
+void setDischarge(int index, char boolean);
+void cellBalancing(float voltages[], int numVoltages);
 
 static const unsigned int crc15Table[256] = {0x0, 0xc599, 0xceab, 0xb32, 0xd8cf, 0x1d56, 0x1664, 0xd3fd, 0xf407, 0x319e, 0x3aac,
 0xff35, 0x2cc8, 0xe951, 0xe263, 0x27fa, 0xad97, 0x680e, 0x633c, 0xa6a5, 0x7558, 0xb0c1,
@@ -9616,7 +9617,7 @@ static const unsigned int crc15Table[256] = {0x0, 0xc599, 0xceab, 0xb32, 0xd8cf,
 0x2d02, 0xa76f, 0x62f6, 0x69c4, 0xac5d, 0x7fa0, 0xba39, 0xb10b, 0x7492, 0x5368, 0x96f1, 0x9dc3,
 0x585a, 0x8ba7, 0x4e3e, 0x450c, 0x8095};
 
-# 135
+# 136
 void LTC6804_initialize();
 
 void set_adc(char MD, char DCP, char CH, char CHG);
@@ -9662,46 +9663,161 @@ void spi_write_read(char *TxData, char TXlen, char *rx_data, char RXlen);
 # 70 "ltc6804.c"
 char ADCV[2];
 char ADAX[2];
+char configReg[1][6] = {0x00, 0x90, 0x1F, 0xC4, 0x00, 0x90};
+
+const int balanceThreshold = 0.02;
 
 
 
-float sumVoltages(float values[], int numVoltages){
+float sumVoltages(float voltages[], int numVoltages){
 float total = 0.0;
 for(int i = 0; i < numVoltages; i++){
-total += values[i];
+total += voltages[i];
 }
 return total;
 }
 
-void measureVoltages(float measurements[], int numVoltages){
+void measureVoltages(float voltages[], int numVoltages){
 char pecError = -1;
 unsigned int ltcData[1][12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
+char tempConfig[1][6] = {0x00, 0x90, 0x1F, 0xC4, 0x00, 0x90};
+
+LTC6804_wrcfg(1, tempConfig);
+_delay((unsigned long)((10)*(32000000/4000000.0)));
 LTC6804_adcv();
+LTC6804_wrcfg(1, configReg);
+
 
 do{
 pecError = LTC6804_rdcv(0, 1, ltcData);
 }while(pecError != 0);
 
 for(int i = 0; i< 12; i ++){
-measurements[i] = 1.0*((float)ltcData[0][i]/10000.0);
+voltages[i] = 1.0*((float)ltcData[0][i]/10000.0);
 
-if(measurements[i] < 0.1){
-measurements[i] = 0.0;
+if(voltages[i] < 0.1){
+voltages[i] = 0.0;
 }
 }
 }
 
-# 113
-void LTC6804_initialize()
+void cellBalancing(float voltages[], int numVoltages){
+float minVoltage = voltages[0];
+
+for(int i = 0; i < numVoltages; i++){
+if(voltages[i] < minVoltage){
+minVoltage = voltages[i];
+}
+}
+char boolean;
+for(int i = 0; i < numVoltages; i++){
+boolean = (voltages[i] >= (minVoltage + 0.02));
+setDischarge(i, boolean);
+}
+LTC6804_wrcfg(1, configReg);
+}
+
+void setDischarge(int index, char boolean){
+switch(index){
+case 0:
+if(boolean){
+configReg[0][4]= configReg[0][4] | 0x01;
+}else{
+configReg[0][4]= configReg[0][4] & (~0x01);
+}
+break;
+case 1:
+if(boolean){
+configReg[0][4]= configReg[0][4] | 0x02;
+}else{
+configReg[0][4]= configReg[0][4] & (~0x02);
+}
+break;
+case 2:
+if(boolean){
+configReg[0][4]= configReg[0][4] | 0x04;
+}else{
+configReg[0][4]= configReg[0][4] & (~0x04);
+}
+break;
+case 3:
+if(boolean){
+configReg[0][4]= configReg[0][4] | 0x08;
+}else{
+configReg[0][4]= configReg[0][4] & (~0x08);
+}
+break;
+case 4:
+if(boolean){
+configReg[0][4]= configReg[0][4] | 0x10;
+}else{
+configReg[0][4]= configReg[0][4] & (~0x10);
+}
+break;
+case 5:
+if(boolean){
+configReg[0][4]= configReg[0][4] | 0x20;
+}else{
+configReg[0][4]= configReg[0][4] & (~0x20);
+}
+break;
+case 6:
+if(boolean){
+configReg[0][4]= configReg[0][4] | 0x40;
+}else{
+configReg[0][4]= configReg[0][4] & (~0x40);
+}
+break;
+case 7:
+if(boolean){
+configReg[0][4]= configReg[0][4] | 0x80;
+}else{
+configReg[0][4]= configReg[0][4] & (~0x80);
+}
+break;
+case 8:
+if(boolean){
+configReg[0][5]= configReg[0][5] | 0x01;
+}else{
+configReg[0][5]= configReg[0][5] & (~0x01);
+}
+break;
+case 9:
+if(boolean){
+configReg[0][5]= configReg[0][5] | 0x02;
+}else{
+configReg[0][5]= configReg[0][5] & (~0x02);
+}
+break;
+case 10:
+if(boolean){
+configReg[0][5]= configReg[0][5] | 0x04;
+}else{
+configReg[0][5]= configReg[0][5] & (~0x04);
+}
+break;
+case 11:
+if(boolean){
+configReg[0][5]= configReg[0][5] | 0x08;
+}else{
+configReg[0][5]= configReg[0][5] & (~0x08);
+}
+break;
+default:
+break;
+}
+}
+
+# 228
+void LTC6804_initialize(configReg)
 {
-set_adc(2,0,0,0);
-
-
+set_adc(2,1,0,0);
+LTC6804_wrcfg(1, configReg);
 
 }
 
-# 137
+# 251
 void set_adc(char MD,
 char DCP,
 char CH,
@@ -9722,7 +9838,7 @@ ADAX[1] = md_bits + 0x60 + CHG ;
 
 }
 
-# 176
+# 290
 void LTC6804_adcv()
 {
 
@@ -9748,7 +9864,7 @@ LATDbits.LATD3 = 1;
 
 }
 
-# 228
+# 342
 void LTC6804_adax()
 {
 char cmd[4];
@@ -9767,7 +9883,7 @@ LATDbits.LATD3 = 1;
 
 }
 
-# 290
+# 404
 char LTC6804_rdcv(char reg,
 char total_ic,
 unsigned int cell_codes[][12]
@@ -9859,7 +9975,7 @@ data_counter= data_counter + 2;
 return(pec_error);
 }
 
-# 428
+# 542
 void LTC6804_rdcv_reg(char reg,
 char total_ic,
 char *data
@@ -9906,7 +10022,7 @@ LATDbits.LATD3 = 1;
 
 }
 
-# 513
+# 627
 char LTC6804_rdaux(char reg,
 char total_ic,
 int aux_codes[][6]
@@ -10002,7 +10118,7 @@ data_counter=data_counter+2;
 return (pec_error);
 }
 
-# 652
+# 766
 void LTC6804_rdaux_reg(char reg,
 char total_ic,
 char *data
@@ -10042,7 +10158,7 @@ LATDbits.LATD3 = 1;
 
 }
 
-# 713
+# 827
 void LTC6804_clrcell()
 {
 char cmd[4];
@@ -10066,7 +10182,7 @@ spi_write_read(cmd,4,0,0);
 LATDbits.LATD3 = 1;
 }
 
-# 760
+# 874
 void LTC6804_clraux()
 {
 char cmd[4];
@@ -10089,14 +10205,14 @@ spi_write_read(cmd,4,0,0);
 LATDbits.LATD3 = 1;
 }
 
-# 819
+# 933
 void LTC6804_wrcfg(char total_ic,
 char config[][6]
 )
 {
 const char BYTES_IN_REG = 6;
 char CMD_LEN = 4+(8*total_ic);
-char *cmd;
+char cmd[12];
 int cfg_pec;
 char cmd_index;
 
@@ -10136,7 +10252,7 @@ LATDbits.LATD3 = 1;
 
 }
 
-# 903
+# 1017
 char LTC6804_rdcfg(char total_ic,
 char r_config[][8]
 )
@@ -10149,7 +10265,7 @@ char pec_error = 0;
 int data_pec;
 int received_pec;
 
-rx_data = (char *) malloc((8*total_ic)*sizeof(char));
+
 
 
 cmd[0] = 0x00;
@@ -10188,7 +10304,7 @@ pec_error = -1;
 return(pec_error);
 }
 
-# 970
+# 1084
 void wakeup_idle()
 {
 LATDbits.LATD3 = 0;
@@ -10196,7 +10312,7 @@ _delay((unsigned long)((2)*(32000000/4000000.0)));
 LATDbits.LATD3 = 1;
 }
 
-# 982
+# 1096
 void wakeup_sleep()
 {
 LATDbits.LATD3 = 0;
@@ -10204,7 +10320,7 @@ _delay((unsigned long)((1)*(32000000/4000.0)));
 LATDbits.LATD3 = 1;
 }
 
-# 998
+# 1112
 int pec15_calc(char len,
 char *data
 )
@@ -10220,7 +10336,7 @@ remainder = (remainder<<8)^crc15Table[addr];
 return(remainder*2);
 }
 
-# 1021
+# 1135
 void spi_write_array(char len,
 char data[]
 )
@@ -10231,7 +10347,7 @@ spi_write((char)data[i]);
 }
 }
 
-# 1041
+# 1155
 void spi_write_read(char tx_Data[],
 char tx_len,
 char *rx_data,

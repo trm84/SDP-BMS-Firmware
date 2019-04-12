@@ -69,36 +69,150 @@ Copyright 2013 Linear Technology Corp. (LTC)
 */
 char ADCV[2]; //!< Cell Voltage conversion command.
 char ADAX[2]; //!< GPIO conversion command.
+char configReg[1][6] = {0x00, 0x90, 0x1F, 0xC4, 0x00, 0x90};
+
+
 
 //Custom Functions Below ===============================================================================
-
-float sumVoltages(float values[], int numVoltages){
+float sumVoltages(float voltages[], int numVoltages){
     float total = 0.0;
     for(int i = 0; i < numVoltages; i++){
-        total += values[i];
+        total += voltages[i];
     }
     return total;
 }
 
-void measureVoltages(float measurements[], int numVoltages){ //Always has to measure 12 cells, if less than specialized code will be needed
+void measureVoltages(float voltages[], int numVoltages){ //Always has to measure 12 cells, if less than specialized code will be needed
     char pecError = -1; // Initialize to fault condition -- force IC to override it
     unsigned int ltcData[1][12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};// initialize to 0V
     
-    LTC6804_adcv(); // Start ADC Conversions
+    char tempConfig[1][6] = {0x00, 0x90, 0x1F, 0xC4, 0x00, 0x90};
     
-    do{ //Redo measurements if their is a transmission error
+    LTC6804_wrcfg(1, tempConfig); //Stop balancing
+    __delay_us(10);
+    LTC6804_adcv(); // Start ADC Conversions
+    LTC6804_wrcfg(1, configReg); //Start balancing
+
+    
+    do{ //Redo measurements if there is a transmission error
         pecError = LTC6804_rdcv(0, 1, ltcData);
     }while(pecError != 0);
 
     for(int i = 0; i< 12; i ++){
-        measurements[i] = 1.0*((float)ltcData[0][i]/10000.0);
+        voltages[i] = 1.0*((float)ltcData[0][i]/10000.0);
         
-        if(measurements[i] < 0.1){ //Throw away garbage data due to breadboard and flimsy connections
-            measurements[i] = 0.0;
+        if(voltages[i] < 0.1){ //Throw away garbage data due to breadboard and flimsy connections
+            voltages[i] = 0.0;
         }
     }
 }
 
+void cellBalancing(float voltages[], int numVoltages){
+    float minVoltage = voltages[0];
+    
+    for(int i = 0; i < numVoltages; i++){
+        if(voltages[i] < minVoltage){
+            minVoltage = voltages[i];
+        }
+    }
+    char boolean;
+    for(int i  = 0; i < numVoltages; i++){
+        boolean = (voltages[i] >= (minVoltage + 0.02));
+        setDischarge(i, boolean);
+    }
+    LTC6804_wrcfg(1, configReg);
+}
+
+void setDischarge(int index, char boolean){
+    switch(index){     
+        case 0:
+            if(boolean){
+                configReg[0][4]= configReg[0][4] | Discharge_Cell_1;
+            }else{
+                configReg[0][4]= configReg[0][4] & (~Discharge_Cell_1);
+            }
+            break;
+        case 1:
+            if(boolean){
+                configReg[0][4]= configReg[0][4] | Discharge_Cell_2;
+            }else{
+                configReg[0][4]= configReg[0][4] & (~Discharge_Cell_2);
+            }
+            break;
+        case 2:
+            if(boolean){
+                configReg[0][4]= configReg[0][4] | Discharge_Cell_3;
+            }else{
+                configReg[0][4]= configReg[0][4] & (~Discharge_Cell_3);
+            }
+            break;
+        case 3:
+            if(boolean){
+                configReg[0][4]= configReg[0][4] | Discharge_Cell_4;
+            }else{
+                configReg[0][4]= configReg[0][4] & (~Discharge_Cell_4);
+            }
+            break;
+        case 4:
+            if(boolean){
+                configReg[0][4]= configReg[0][4] | Discharge_Cell_5;
+            }else{
+                configReg[0][4]= configReg[0][4] & (~Discharge_Cell_5);
+            }
+            break;
+        case 5:
+            if(boolean){
+                configReg[0][4]= configReg[0][4] | Discharge_Cell_6;
+            }else{
+                configReg[0][4]= configReg[0][4] & (~Discharge_Cell_6);
+            }
+            break;
+        case 6:
+            if(boolean){
+                configReg[0][4]= configReg[0][4] | Discharge_Cell_7;
+            }else{
+                configReg[0][4]= configReg[0][4] & (~Discharge_Cell_7);
+            }
+            break;
+        case 7:
+            if(boolean){
+                configReg[0][4]= configReg[0][4] | Discharge_Cell_8;
+            }else{
+                configReg[0][4]= configReg[0][4] & (~Discharge_Cell_8);
+            }
+            break;
+        case 8:
+            if(boolean){
+                configReg[0][5]= configReg[0][5] | Discharge_Cell_9;
+            }else{
+                configReg[0][5]= configReg[0][5] & (~Discharge_Cell_9);
+            }
+            break;
+        case 9:
+            if(boolean){
+                configReg[0][5]= configReg[0][5] | Discharge_Cell_10;
+            }else{
+                configReg[0][5]= configReg[0][5] & (~Discharge_Cell_10);
+            }
+            break;
+        case 10:
+            if(boolean){
+                configReg[0][5]= configReg[0][5] | Discharge_Cell_11;
+            }else{
+                configReg[0][5]= configReg[0][5] & (~Discharge_Cell_11);
+            }
+            break;
+        case 11:
+            if(boolean){
+                configReg[0][5]= configReg[0][5] | Discharge_Cell_12;
+            }else{
+                configReg[0][5]= configReg[0][5] & (~Discharge_Cell_12);
+            }
+            break;
+        default:
+            break; //there was an error
+    }
+}
 
  //LTC Functions Below ===============================================================================
 
@@ -110,12 +224,11 @@ void measureVoltages(float measurements[], int numVoltages){ //Always has to mea
   The Function also intializes the ADCV and ADAX commands to convert all cell and GPIO voltages in
   the Normal ADC mode.
 */
-void LTC6804_initialize()
+void LTC6804_initialize(configReg)
 {
-  set_adc(MD_NORMAL,DCP_DISABLED,CELL_CH_ALL,AUX_CH_ALL);
- // char config2[1][6] = {0xF8, 0x01, 0x10, 0x00, 0x00, 0x08};
-  
-//  LTC6804_wrcfg(1, config2);
+  set_adc(MD_NORMAL,DCP_ENABLED,CELL_CH_ALL,AUX_CH_ALL);
+  LTC6804_wrcfg(1, configReg); //Write initial configuration
+
 }
 
 /*!*******************************************************************************************************************
@@ -822,7 +935,7 @@ void LTC6804_wrcfg(char total_ic, //The number of ICs being written to
 {
   const char BYTES_IN_REG = 6;
   char CMD_LEN = 4+(8*total_ic);
-  char *cmd;
+  char cmd[12];
   int cfg_pec;
   char cmd_index; //command counter
   
@@ -912,7 +1025,7 @@ char LTC6804_rdcfg(char total_ic, //Number of ICs in the system
   int data_pec;
   int received_pec;
   
-  rx_data = (char *) malloc((8*total_ic)*sizeof(char));
+ // rx_data = (char *) malloc((8*total_ic)*sizeof(char));
   
   //1
   cmd[0] = 0x00;
