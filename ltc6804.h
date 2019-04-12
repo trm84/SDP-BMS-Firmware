@@ -7,10 +7,13 @@
         #define cs_pin LATDbits.LATD3
 
     //Prototypes
-        void measureVoltages(float voltages[], int numVoltages);
+        void measureVoltages(float voltages[], float *totalVoltage, int numVoltages);
         float sumVoltages(float voltages[], int numVoltages);
         void setDischarge(int index, char boolean);
         void cellBalancing(float voltages[], int numVoltages);
+        void LTC6804_rdstat_reg(char reg, char total_ic, char *data);
+        void LTC6804_adstat();
+        
  //LTC Code Below ===============================================================================
 static const unsigned int crc15Table[256] = {0x0, 0xc599, 0xceab, 0xb32, 0xd8cf, 0x1d56, 0x1664, 0xd3fd, 0xf407, 0x319e, 0x3aac, //!<precomputed CRC15 Table
     0xff35, 0x2cc8, 0xe951, 0xe263, 0x27fa, 0xad97, 0x680e, 0x633c, 0xa6a5, 0x7558, 0xb0c1,
@@ -25,7 +28,7 @@ static const unsigned int crc15Table[256] = {0x0, 0xc599, 0xceab, 0xb32, 0xd8cf,
     0x4a88, 0x8f11, 0x57c, 0xc0e5, 0xcbd7, 0xe4e, 0xddb3, 0x182a, 0x1318, 0xd681, 0xf17b,
     0x34e2, 0x3fd0, 0xfa49, 0x29b4, 0xec2d, 0xe71f, 0x2286, 0xa213, 0x678a, 0x6cb8, 0xa921,
     0x7adc, 0xbf45, 0xb477, 0x71ee, 0x5614, 0x938d, 0x98bf, 0x5d26, 0x8edb, 0x4b42, 0x4070,
-    0x85e9, 0xf84, 0xca1d, 0xc12f, 0x4b6, 0xd74b, 0x12d2, 0x19e0, 0xdc79, 0xfb83, 0x3e1a, 0x3528,
+    0x85e9, 0xf84, 0xca1d, 0xc12f, 0x4b6F, 0xd74b, 0x12d2, 0x19e0, 0xdc79, 0xfb83, 0x3e1a, 0x3528,
     0xf0b1, 0x234c, 0xe6d5, 0xede7, 0x287e, 0xf93d, 0x3ca4, 0x3796, 0xf20f, 0x21f2, 0xe46b, 0xef59,
     0x2ac0, 0xd3a, 0xc8a3, 0xc391, 0x608, 0xd5f5, 0x106c, 0x1b5e, 0xdec7, 0x54aa, 0x9133, 0x9a01,
     0x5f98, 0x8c65, 0x49fc, 0x42ce, 0x8757, 0xa0ad, 0x6534, 0x6e06, 0xab9f, 0x7862, 0xbdfb, 0xb6c9,
@@ -137,13 +140,9 @@ void LTC6804_initialize();
 
 void set_adc(char MD, char DCP, char CH, char CHG);
 
-void Set_Stat(int MD, int CHST); // // Similar function as above but sets stats/tests. Custom code not from LT
-
 void LTC6804_adcv();
 
 void LTC6804_adax();
-
-void LTC6804_ADSTAT(); // Similar function as above but writes stats/tests. Custom code not from LT
 
 char LTC6804_rdcv(char reg, char total_ic, unsigned int cell_codes[][12]);
 
@@ -152,10 +151,6 @@ void LTC6804_rdcv_reg(char reg, char nIC, char *data);
 char LTC6804_rdaux(char reg, char nIC, int aux_codes[][6]);
 
 void LTC6804_rdaux_reg(char reg, char nIC, char *data);
-
-int LTC6804_rdStat(int reg, int total_ic, int Stat_codes[][6]); // Similar function as above but read stats. Custom code not from LT
-
-void LTC6804_rdStat_reg(int reg, int total_ic, int *data); //This is used for the LTC6804_rdStat. Custom code not from LT
 
 void LTC6804_clrcell();
 
@@ -174,4 +169,3 @@ int pec15_calc(char len, char *data);
 void spi_write_array(char length, char *data);
 
 void spi_write_read(char *TxData, char TXlen, char *rx_data, char RXlen);
-

@@ -17,114 +17,128 @@
 //Defines
     #define FOSC 32000000
     #define FCY 32000000/2
-    #define numTemps 5
-    #define numCurrent 20
-    #define numVoltages 12
-    #define maxVoltage 50.4 //Battery Pack Voltages at 100% charge
+    #define NUM_TEMPS 5
+    #define NUM_CURRENT 20
+    #define NUM_VOLTAGES 12
+    #define MAX_VOLTAGE 50.4 //Battery Pack Voltages at 100% charge
+    #define CAPACITY 12 //Ahr
     #define DISCHARGE_EN LATDbits.LATD5 //Discharge Enable Pin
     #define CHARGE_EN  LATDbits.LATD4 //Charge Enable Pin
     #define CHARGE_SWITCH PORTAbits.RA0
-    #define uartLines 21
+    #define UART_LINES 21
+    #define TEST_LED LATAbits.LATA5
 
 //Prototypes
     void setup();
-    int startUp();
-
+    int startUp(int highestTemp, int temps[], float voltages[], float totalVoltage, float current, int *soc);
+    char running();
+    
 //Global Variables
     int j = 0, k = 0 , z = 0; //incrementing variables
-    int uartBool = 0; //Timer enabled bool to write to UART for testing
-    
-    float currentBuff[numCurrent]; //buffer to store current values
-    int currentIndex = 0; //index for current buffer
-    float current = 0; //Current 
+    int uartBool = 0; //Timer  enabled bool to write to UART for testing
     int currentBool = 0; //Measuring Current bool
     
-    float voltages[numVoltages]; //Voltages
+    
+    
+    
+    
+    
+//Main
+void main(void){    
+    float voltages[NUM_VOLTAGES]; //Voltages
     float totalVoltage; //Total Voltage
     
+    int currentIndex = 0; //Index for current buffer
+    float currentBuff[NUM_CURRENT]; //Buffer to store current values
+    float current = 0; //Current 
+    
+    int temps[NUM_TEMPS]; //Temperatures
     int highestTemp; //Highest Temperature
-    int temps[numTemps]; //Temperatures
-    float temp; //
-    
-    int SOC = 0; //SOC Percentage out of 100
-    
-    int minVoltage;
 
-//Main
-void main(void){
-    
-    int numFaults = 0;
-    
+    int numFaults = 0; //Number of faults
+    int soc = 0; //SOC Percentage out of 100
     
     setup();
     
-    __delay_ms(1000);
+    __delay_ms(1000); //start delay
     
     DISCHARGE_EN = 0; //Defaults to charge and discharge circuits being off
-    CHARGE_EN = 0; 
+    CHARGE_EN = startUp(&highestTemp, temps[], voltages[], &totalVoltage, &current, &soc); 
     
     DISCHARGE_EN = 1;
-    /* 
+    /* Design for charging circuit went belly up -- might bodge it in
     if(CHARGE_SWITCH == 1 ){
-        CHARGE_EN = startUp();   //If startup check is okay, enable charging
+        CHARGE_EN = startUp(highestTemp);   //If startup check is okay, enable charging
     }else{
-        DISCHARGE_EN = startUp();               //If startup check is okay, enable discharging
+        DISCHARGE_EN = startUp(highestTemp);               //If startup check is okay, enable discharging
     }
     */
-    //{0x00, 0x90, 0x1F, 0xC4, 0x00, 0x90} //GPIO/REFON/SWTRD/ADC0PT OFF, UV=3.1, OV=4.2, DCC[1-12] = OFF, DCTO = 20min
-    //UV: 0b011110010000
-    //OV: 0b101001000001
 
     
     while(1){
         
-        LATAbits.LATA5 ^= 1;
-        measureVoltages(voltages, numVoltages); // Voltages 
+       // while(running());
+       // while(!(running()));
+        TEST_LED ^= 1;
         
-        totalVoltage = sumVoltages(voltages, numVoltages); 
-        
-        
-        
-        
-        for(int i = 0; i <numTemps; i++){
-            if(temps[i] >= 40 || temps[i] <= 10){
-                numFaults++;
-            }
-        }
-        
-        if(current >= 10){
-            numFaults++;
-        }
-        
-        if(numFaults >= 10){
-            DISCHARGE_EN = 0;
-        }
-
-        highestTemp = getTemps(temps, numTemps); // Temperatures
-        if(currentBool == 1){ //Add current to buffer
+        /*MEASUREMENTS*/
+        //VOLTAGE
+        measureVoltages(voltages, &totalVoltage, NUM_VOLTAGES); // Voltages 
+        //TEMPERATURE
+        highestTemp = getTemps(temps, NUM_TEMPS); // Temperatures
+        //CURRENT
+         if(currentBool == 1){ //Add current to buffer
             currentBuff[currentIndex] = getCurrent();
             currentIndex ++;
-            if(currentIndex >= numCurrent){ //Average buffer to get finalized current value
-                cellBalancing(voltages, numVoltages); //Balance cells
+            if(currentIndex >= NUM_CURRENT){ //Average buffer to get finalized current value
+                cellBalancing(voltages, NUM_VOLTAGES); //Balance 
                 current = avgBuff(currentBuff, currentIndex);
                 currentIndex = 0;
             }
             currentBool = 0;
         }
+        /*END MEASUREMENTS*/
+        
+        /*FAULT CHECKING*/
+        //TEMPERATURE
+        for(int i = 0; i <NUM_TEMPS; i++){
+            if(temps[i] >= 40 || temps[i] <= 10){
+                numFaults++;
+            }
+        }
+        //CURRENT
+        if(current >= 10){
+            numFaults++;
+        }
+        //VOLTAGES
+        /**********/
+        //COUNT FAULTS
+        if(numFaults >= 10){
+            DISCHARGE_EN = 0;
+        }
+        /*END FAULT CHECKING*/
+        
+       /*WRITE DATA TO DISP*/
+        //UART
         if(uartBool == 1){ //UART
-            writeValuesToUart(voltages, numVoltages, totalVoltage, temps, numTemps, highestTemp, current, uartLines);
+            writeValuesToUart(voltages, NUM_VOLTAGES, totalVoltage, temps, NUM_TEMPS, highestTemp, current, UART_LINES);
             uartBool = 0;
         }
-     
+        //I2C
+        /**********/
+        /*END WRITING DATA TO DISPLAY*/
     }
 }
- 
-//Calculates initial SOC on startup and does the following startup checks
-//open circuit for voltage sense, short circuit for current sense
-// and open circuit temperature sense
-int startUp(){
-    highestTemp = getTemps(temps, numTemps);
-    for(int i = 0; i < numTemps; i++){
+
+/******************************************************************************/
+//int startup()
+//Run once on start up. Ensures that batteries are in a safe
+//operating condition prior to initial startup. Then calculates initial soc
+//to give column counting algorithm an accurate start point
+/******************************************************************************/
+int startUp(int *highestTemp, int temps[], float voltages[], float *totalVoltage, float *current, int *soc){
+    highestTemp = getTemps(temps, NUM_TEMPS);
+    for(int i = 0; i < NUM_TEMPS; i++){
         if(temps[i] < 5 || temps[i] > 40){
             //Two Possibilities:
             //Open circuit temp sensor -- do not allow battery to charge or discharge
@@ -139,18 +153,27 @@ int startUp(){
         return 0;
     }
     
-    measureVoltages(voltages, numVoltages);
-    for(int i = 0; i < numVoltages; i++){
+    measureVoltages(voltages, &totalVoltage, NUM_VOLTAGES);
+    for(int i = 0; i < NUM_VOLTAGES; i++){
         if(voltages[i] > 4.2 || voltages[i] < 3.1){
             //Batteries are over or under charged
             return 0;
         }
     }
-    totalVoltage = sumVoltages(voltages, numVoltages); 
-    SOC = (int)(100.0*(maxVoltage / totalVoltage)); //Calculate Initial SOC
+    totalVoltage = sumVoltages(voltages, NUM_VOLTAGES); 
+    soc = (int)(100.0*(MAX_VOLTAGE / totalVoltage)); //Calculate Initial SOC
     return 1;
 }
 
+char running(){
+ return 1;   
+}
+
+/******************************************************************************/
+//ISR()
+//All interrupts go through this function
+//All interrupts have the same priority
+/******************************************************************************/
 void __interrupt ISR(void){
     //TIMER0 
     if(INTCONbits.TMR0IF == 1 && INTCONbits.TMR0IE == 1){
@@ -189,6 +212,10 @@ void __interrupt ISR(void){
      
 }
   
+/******************************************************************************/
+//void setup()
+//Calls the setup functions for the modules that are used
+/******************************************************************************/
 void setup(void){
     //Misc
         TRISDbits.TRISD4 = 0; //Enable Charge Pin
@@ -228,7 +255,5 @@ void setup(void){
        spiSetup();
 
     //LTC
-    LTC6804_initialize();
-
-       
+        LTC6804_initialize();
 }

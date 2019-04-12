@@ -69,41 +69,51 @@ Copyright 2013 Linear Technology Corp. (LTC)
 */
 char ADCV[2]; //!< Cell Voltage conversion command.
 char ADAX[2]; //!< GPIO conversion command.
+char ADSTAT[2]; // STATUS REGISTER CONVERSION COMMAND
 char configReg[1][6] = {0x00, 0x90, 0x1F, 0xC4, 0x00, 0x90};
-
-
 
 //Custom Functions Below ===============================================================================
 float sumVoltages(float voltages[], int numVoltages){
-    float total = 0.0;
+    //char data[8];
+    //LTC6804_adstat(); //start conversion
+    //__delay_us(100);
+    //LTC6804_rdstat_reg(1, 1, data); //Reads data from stat register
+    
+    //unsigned int totalVoltage = (data[1] << 8) | data[0];
+    
+    float totalVoltage = 0;
+    
     for(int i = 0; i < numVoltages; i++){
-        total += voltages[i];
+        totalVoltage += voltages[i];
     }
-    return total;
+    
+    
+    return (totalVoltage);
+    
 }
 
-void measureVoltages(float voltages[], int numVoltages){ //Always has to measure 12 cells, if less than specialized code will be needed
+void measureVoltages(float voltages[], float *totalVoltage, int numVoltages){ //Always has to measure 12 cells, if less than specialized code will be needed
+    int errorCount = 0;
     char pecError = -1; // Initialize to fault condition -- force IC to override it
     unsigned int ltcData[1][12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};// initialize to 0V
-    
-    char tempConfig[1][6] = {0x00, 0x90, 0x1F, 0xC4, 0x00, 0x90};
-    
-    LTC6804_wrcfg(1, tempConfig); //Stop balancing
-    __delay_us(10);
+     
     LTC6804_adcv(); // Start ADC Conversions
-    LTC6804_wrcfg(1, configReg); //Start balancing
-
+    *totalVoltage = sumVoltages(voltages,  numVoltages);
     
     do{ //Redo measurements if there is a transmission error
         pecError = LTC6804_rdcv(0, 1, ltcData);
-    }while(pecError != 0);
+        errorCount ++;
+    }while(pecError != 0 && errorCount <= 10);
 
     for(int i = 0; i< 12; i ++){
-        voltages[i] = 1.0*((float)ltcData[0][i]/10000.0);
-        
+        voltages[i] = 1.0*((float)ltcData[0][i]/10000.0);   
         if(voltages[i] < 0.1){ //Throw away garbage data due to breadboard and flimsy connections
             voltages[i] = 0.0;
         }
+    }
+    
+    if(errorCount <= 10){
+        cellBalancing(voltages, numVoltages);
     }
 }
 
@@ -117,7 +127,7 @@ void cellBalancing(float voltages[], int numVoltages){
     }
     char boolean;
     for(int i  = 0; i < numVoltages; i++){
-        boolean = (voltages[i] >= (minVoltage + 0.02));
+        boolean = (voltages[i] >= (minVoltage + 0.05));
         setDischarge(i, boolean);
     }
     LTC6804_wrcfg(1, configReg);
@@ -214,7 +224,72 @@ void setDischarge(int index, char boolean){
     }
 }
 
- //LTC Functions Below ===============================================================================
+void LTC6804_rdstat_reg(char reg, //Determines which status register is read back
+					   char total_ic, //The number of ICs in the system
+					   char *data //Array of data 
+					   )
+{
+  const char REG_LEN = 8; // number of bytes in the register + 2 bytes for the PEC
+  char cmd[4];
+  int cmd_pec;
+  
+  //1
+  if (reg == 1)			//STATA
+  {
+    cmd[1] = 0x10;
+    cmd[0] = 0x00;
+  }
+  else if(reg == 2)		//STATB
+  {
+    cmd[1] = 0x12;
+    cmd[0] = 0x00;
+  } 
+  else					//COMMS
+  {
+     cmd[1] = 0x22;		
+     cmd[0] = 0x07;
+  }
+  //2
+  cmd_pec = pec15_calc(2, cmd);
+  cmd[2] = (char)(cmd_pec >> 8);
+  cmd[3] = (char)(cmd_pec);
+  
+  //3
+  wakeup_idle (); //This will guarantee that the LTC6804 isoSPI port is awake, this command can be removed.
+  //4
+  cs_pin = 0;
+  spi_write_read(cmd,4,data,(REG_LEN*total_ic));
+  cs_pin = 1;
+
+}
+
+
+void LTC6804_adstat() //Start status register conversion
+{
+
+  char cmd[4];
+  int cmd_pec;
+  
+  //1
+  cmd[0] = ADSTAT[0];
+  cmd[1] = ADSTAT[1];
+  
+  //2
+  cmd_pec = pec15_calc(2, ADSTAT);
+  cmd[2] = (char)(cmd_pec >> 8);
+  cmd[3] = (char)(cmd_pec);
+  
+  //3
+  wakeup_idle (); //This will guarantee that the LTC6804 isoSPI port is awake. This command can be removed.
+  
+  //4
+  cs_pin = 0;
+  spi_write_array(4,cmd);
+  cs_pin = 1;
+
+}
+
+ //LT Functions Below ===============================================================================
 
 
 /*!
@@ -224,7 +299,7 @@ void setDischarge(int index, char boolean){
   The Function also intializes the ADCV and ADAX commands to convert all cell and GPIO voltages in
   the Normal ADC mode.
 */
-void LTC6804_initialize(configReg)
+void LTC6804_initialize()
 {
   set_adc(MD_NORMAL,DCP_ENABLED,CELL_CH_ALL,AUX_CH_ALL);
   LTC6804_wrcfg(1, configReg); //Write initial configuration
@@ -264,6 +339,11 @@ void set_adc(char MD, //ADC Mode
   ADAX[0] = md_bits + 0x04;
   md_bits = (MD & 0x01) << 7;
   ADAX[1] = md_bits + 0x60 + CHG ;
+  
+  md_bits = (MD & 0x02) >> 1;
+  ADSTAT[0] = md_bits + 0x04;
+  md_bits = (MD & 0x01) << 7;
+  ADSTAT[1] = md_bits + 0x69;
   
 }
 
@@ -424,7 +504,7 @@ char LTC6804_rdcv(char reg, // Controls which cell voltage register is read back
     for(char cell_reg = 1; cell_reg<5; cell_reg++)         			 			//executes once for each of the LTC6804 cell voltage registers
     {
       data_counter = 0;
-      LTC6804_rdcv_reg(cell_reg, total_ic,cell_data );								//Reads a single Cell voltage register
+      LTC6804_rdcv_reg(cell_reg, total_ic, cell_data);								//Reads a single Cell voltage register
 	  
       for (char current_ic = 0 ; current_ic < total_ic; current_ic++) 			// executes for every LTC6804 in the daisy chain
       {																 	  			// current_ic is used as the IC counter
@@ -634,13 +714,12 @@ char LTC6804_rdaux(char reg, //Determines which GPIO voltage register is read ba
   const char BYT_IN_REG = 6;
   const char GPIO_IN_REG = 3;
   
-  char *data;
+  char data[8];
   char data_counter = 0; 
   char pec_error = 0;
   int parsed_aux;
   int received_pec;
   int data_pec;
-  data = (char *) malloc((NUM_RX_BYT*total_ic)*sizeof(char));
   //1.a
   if (reg == 0)
   {
