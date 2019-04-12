@@ -9638,7 +9638,7 @@ char str[50];
 int n;
 
 
-void writeValuesToUart(float voltageArr[], int voltageArrLength, float totalVoltage, int temperatureArr[], int temperatureArrLength, int temperatureHigh, float current, int uartLines);
+void writeValuesToUart(float voltageArr[], int voltageArrLength, float totalVoltage, int temperatureArr[], int temperatureArrLength, int temperatureHigh, float current, float soc, int uartLines);
 void uartSetup();
 void writeVoltages(float volts[], int length, float totalVoltage);
 void writeTemps(int temps[], int highestTemp, int numTemps);
@@ -9646,6 +9646,7 @@ void clearScreen(int numLines);
 void uartEnable();
 void uartDisable();
 void writeCurrent(float current);
+void writeSOC(float soc);
 
 # 38 "timer.h"
 void timer0Setup();
@@ -9851,9 +9852,9 @@ const char OledFont[][8] =
 #pragma config LPBOR = OFF
 #pragma config LVP = OFF
 
-# 31 "main.c"
+# 33 "main.c"
 void setup();
-int startUp(int highestTemp, int temps[], float voltages[], float totalVoltage, float current, int soc);
+int startUp(int *highestTemp, int temps[], float voltages[], float *totalVoltage, float *current, float *soc);
 char running();
 
 
@@ -9861,7 +9862,7 @@ int j = 0, k = 0 , z = 0;
 int uartBool = 0;
 int currentBool = 0;
 
-# 46
+# 48
 void main(void){
 float voltages[12];
 float totalVoltage;
@@ -9874,18 +9875,19 @@ int temps[5];
 int highestTemp;
 
 int numFaults = 0;
-int soc = 0;
+float soc = 0;
 
+const unsigned int total_capacity = 12*3600;
 setup();
 
 _delay((unsigned long)((1000)*(32000000/4000.0)));
 
-LATDbits.LATD5 = 0;
-LATDbits.LATD4 = 0;
 
+
+LATDbits.LATD5 = startUp(&highestTemp, temps, voltages, &totalVoltage, &current, &soc);
 LATDbits.LATD5 = 1;
 
-# 77
+# 80
 while(1){
 
 
@@ -9904,6 +9906,9 @@ currentIndex ++;
 if(currentIndex >= 20){
 cellBalancing(voltages, 12);
 current = avgBuff(currentBuff, currentIndex);
+
+soc = ((((soc)*(float)total_capacity) - (current/500.0))/((float)(total_capacity)));
+
 currentIndex = 0;
 }
 currentBool = 0;
@@ -9932,7 +9937,7 @@ LATDbits.LATD5 = 0;
 
 
 if(uartBool == 1){
-writeValuesToUart(voltages, 12, totalVoltage, temps, 5, highestTemp, current, 21);
+writeValuesToUart(voltages, 12, totalVoltage, temps, 5, highestTemp, current, soc, 22);
 uartBool = 0;
 }
 
@@ -9941,9 +9946,19 @@ uartBool = 0;
 }
 }
 
-# 138
-int startUp(int highestTemp, int temps[], float voltages[], float totalVoltage, float current, int soc){
-highestTemp = getTemps(temps, 5);
+# 144
+int startUp(int *highestTemp, int temps[], float voltages[], float *totalVoltage, float *current, float *soc){
+measureVoltages(voltages, totalVoltage, 12);
+for(int i = 0; i < 12; i++){
+if(voltages[i] > 4.2 || voltages[i] < 3.1){
+
+return 0;
+}
+}
+*totalVoltage = sumVoltages(voltages, 12);
+*soc = ((float)(*totalVoltage) - (float)38.4) / ((float)50.4 - (float)38.4);
+
+*highestTemp = getTemps(temps, 5);
 for(int i = 0; i < 5; i++){
 if(temps[i] < 5 || temps[i] > 40){
 
@@ -9953,21 +9968,12 @@ return 0;
 }
 }
 
-current = getCurrent();
-if(current < -2 || current > 2){
+*current = getCurrent();
+if(*current < -2 || *current > 2){
 
 return 0;
 }
 
-measureVoltages(voltages, &totalVoltage, 12);
-for(int i = 0; i < 12; i++){
-if(voltages[i] > 4.2 || voltages[i] < 3.1){
-
-return 0;
-}
-}
-totalVoltage = sumVoltages(voltages, 12);
-soc = (int)(100.0*(50.4 / totalVoltage));
 return 1;
 }
 
@@ -9975,7 +9981,7 @@ char running(){
 return 1;
 }
 
-# 176
+# 183
 void __interrupt ISR(void){
 
 if(INTCONbits.TMR0IF == 1 && INTCONbits.TMR0IE == 1){
@@ -10014,7 +10020,7 @@ PIR1bits.SSP1IF = 0;
 
 }
 
-# 218
+# 225
 void setup(void){
 
 TRISDbits.TRISD4 = 0;

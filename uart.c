@@ -8,11 +8,18 @@
 
 #include "uart.h"
 
-void writeValuesToUart(float voltageArr[], int voltageArrLength, float totalVoltage, int temperatureArr[], int temperatureArrLength, int temperatureHigh, float current, int uartLines){
+void writeValuesToUart(float voltageArr[], int voltageArrLength, float totalVoltage, int temperatureArr[], int temperatureArrLength, int temperatureHigh, float current, float soc, int uartLines){
     clearScreen(uartLines);
     writeVoltages(voltageArr, voltageArrLength, totalVoltage);
     writeTemps(temperatureArr, temperatureHigh , temperatureArrLength);
     writeCurrent(current);
+    writeSOC(soc);
+}
+
+void writeSOC(float soc){
+    sprintf(&str[0], "SOC = %0.4f percent \n\r", (soc*100));
+    uartEnable();
+    while(PIE1bits.TXIE);
 }
 
 void writeVoltages(float volts[], int length, float totalVoltage){

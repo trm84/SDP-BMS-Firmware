@@ -20,17 +20,18 @@
     #define NUM_TEMPS 5
     #define NUM_CURRENT 20
     #define NUM_VOLTAGES 12
-    #define MAX_VOLTAGE 50.4 //Battery Pack Voltages at 100% charge
+    #define MAX_VOLTAGE 50.4 //Battery Pack at 100% charge
+    #define MIN_VOLTAGE 38.4 //Battery Pack at 0% charge
     #define CAPACITY 12 //Ahr
     #define DISCHARGE_EN LATDbits.LATD5 //Discharge Enable Pin
     #define CHARGE_EN  LATDbits.LATD4 //Charge Enable Pin
     #define CHARGE_SWITCH PORTAbits.RA0
-    #define UART_LINES 21
+    #define UART_LINES 22
     #define TEST_LED LATAbits.LATA5
 
 //Prototypes
     void setup();
-    int startUp(int highestTemp, int temps[], float voltages[], float totalVoltage, float current, int *soc);
+    int startUp(int *highestTemp, int temps[], float voltages[], float *totalVoltage, float *current, float *soc);
     char running();
     
 //Global Variables
@@ -56,15 +57,16 @@ void main(void){
     int highestTemp; //Highest Temperature
 
     int numFaults = 0; //Number of faults
-    int soc = 0; //SOC Percentage out of 100
+    float soc = 0; //SOC Percentage out of 100
     
+    const unsigned int total_capacity = CAPACITY*3600; //A-s
     setup();
     
     __delay_ms(1000); //start delay
     
-    DISCHARGE_EN = 0; //Defaults to charge and discharge circuits being off
-    CHARGE_EN = startUp(&highestTemp, temps[], voltages[], &totalVoltage, &current, &soc); 
-    
+    //DISCHARGE_EN = 0; //Defaults to charge and discharge circuits being off
+    //CHARGE_EN = startUp(&highestTemp, temps, voltages, &totalVoltage, &current, &soc); 
+    DISCHARGE_EN = startUp(&highestTemp, temps, voltages, &totalVoltage, &current, &soc);
     DISCHARGE_EN = 1;
     /* Design for charging circuit went belly up -- might bodge it in
     if(CHARGE_SWITCH == 1 ){
@@ -93,6 +95,9 @@ void main(void){
             if(currentIndex >= NUM_CURRENT){ //Average buffer to get finalized current value
                 cellBalancing(voltages, NUM_VOLTAGES); //Balance 
                 current = avgBuff(currentBuff, currentIndex);
+                
+                soc = ((((soc)*(float)total_capacity) - (current/500.0))/((float)(total_capacity)));
+                
                 currentIndex = 0;
             }
             currentBool = 0;
@@ -121,7 +126,7 @@ void main(void){
        /*WRITE DATA TO DISP*/
         //UART
         if(uartBool == 1){ //UART
-            writeValuesToUart(voltages, NUM_VOLTAGES, totalVoltage, temps, NUM_TEMPS, highestTemp, current, UART_LINES);
+            writeValuesToUart(voltages, NUM_VOLTAGES, totalVoltage, temps, NUM_TEMPS, highestTemp, current, soc, UART_LINES);
             uartBool = 0;
         }
         //I2C
@@ -136,8 +141,18 @@ void main(void){
 //operating condition prior to initial startup. Then calculates initial soc
 //to give column counting algorithm an accurate start point
 /******************************************************************************/
-int startUp(int *highestTemp, int temps[], float voltages[], float *totalVoltage, float *current, int *soc){
-    highestTemp = getTemps(temps, NUM_TEMPS);
+int startUp(int *highestTemp, int temps[], float voltages[], float *totalVoltage, float *current, float *soc){
+    measureVoltages(voltages, totalVoltage, NUM_VOLTAGES);
+    for(int i = 0; i < NUM_VOLTAGES; i++){
+        if(voltages[i] > 4.2 || voltages[i] < 3.1){
+            //Batteries are over or under charged
+            return 0;
+        }
+    }
+    *totalVoltage = sumVoltages(voltages, NUM_VOLTAGES); 
+    *soc = ((float)(*totalVoltage) - (float)MIN_VOLTAGE) / ((float)MAX_VOLTAGE - (float)MIN_VOLTAGE);
+    
+    *highestTemp = getTemps(temps, NUM_TEMPS);
     for(int i = 0; i < NUM_TEMPS; i++){
         if(temps[i] < 5 || temps[i] > 40){
             //Two Possibilities:
@@ -147,21 +162,12 @@ int startUp(int *highestTemp, int temps[], float voltages[], float *totalVoltage
         }
     }
     
-    current = getCurrent();
-    if(current < -2 || current > 2){
+    *current = getCurrent();
+    if(*current < -2 || *current > 2){
        //Current Sensor Issue
         return 0;
     }
     
-    measureVoltages(voltages, &totalVoltage, NUM_VOLTAGES);
-    for(int i = 0; i < NUM_VOLTAGES; i++){
-        if(voltages[i] > 4.2 || voltages[i] < 3.1){
-            //Batteries are over or under charged
-            return 0;
-        }
-    }
-    totalVoltage = sumVoltages(voltages, NUM_VOLTAGES); 
-    soc = (int)(100.0*(MAX_VOLTAGE / totalVoltage)); //Calculate Initial SOC
     return 1;
 }
 

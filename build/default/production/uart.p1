@@ -7,6 +7,8 @@ Version 3.2 HI-TECH Software Intermediate Code
 [v _writeTemps `(v ~T0 @X0 0 ef3`*i`i`i ]
 "48
 [v _writeCurrent `(v ~T0 @X0 0 ef1`f ]
+"49
+[v _writeSOC `(v ~T0 @X0 0 ef1`f ]
 "194 C:\Program Files (x86)\Microchip\xc8\v1.45\include\stdio.h
 [v _sprintf `(i ~T0 @X0 0 e1v`*uc`*Cuc ]
 "46 uart.h
@@ -6906,7 +6908,7 @@ Version 3.2 HI-TECH Software Intermediate Code
 "38
 [v _n `i ~T0 @X0 1 e ]
 [; ;uart.h: 38: int n;
-[; ;uart.h: 41: void writeValuesToUart(float voltageArr[], int voltageArrLength, float totalVoltage, int temperatureArr[], int temperatureArrLength, int temperatureHigh, float current, int uartLines);
+[; ;uart.h: 41: void writeValuesToUart(float voltageArr[], int voltageArrLength, float totalVoltage, int temperatureArr[], int temperatureArrLength, int temperatureHigh, float current, float soc, int uartLines);
 [; ;uart.h: 42: void uartSetup();
 [; ;uart.h: 43: void writeVoltages(float volts[], int length, float totalVoltage);
 [; ;uart.h: 44: void writeTemps(int temps[], int highestTemp, int numTemps);
@@ -6914,10 +6916,11 @@ Version 3.2 HI-TECH Software Intermediate Code
 [; ;uart.h: 46: void uartEnable();
 [; ;uart.h: 47: void uartDisable();
 [; ;uart.h: 48: void writeCurrent(float current);
+[; ;uart.h: 49: void writeSOC(float soc);
 "11 uart.c
-[v _writeValuesToUart `(v ~T0 @X0 1 ef8`*f`i`f`*i`i`i`f`i ]
+[v _writeValuesToUart `(v ~T0 @X0 1 ef9`*f`i`f`*i`i`i`f`f`i ]
 {
-[; ;uart.c: 11: void writeValuesToUart(float voltageArr[], int voltageArrLength, float totalVoltage, int temperatureArr[], int temperatureArrLength, int temperatureHigh, float current, int uartLines){
+[; ;uart.c: 11: void writeValuesToUart(float voltageArr[], int voltageArrLength, float totalVoltage, int temperatureArr[], int temperatureArrLength, int temperatureHigh, float current, float soc, int uartLines){
 [e :U _writeValuesToUart ]
 [v _voltageArr `*f ~T0 @X0 1 r1 ]
 [v _voltageArrLength `i ~T0 @X0 1 r2 ]
@@ -6926,7 +6929,8 @@ Version 3.2 HI-TECH Software Intermediate Code
 [v _temperatureArrLength `i ~T0 @X0 1 r5 ]
 [v _temperatureHigh `i ~T0 @X0 1 r6 ]
 [v _current `f ~T0 @X0 1 r7 ]
-[v _uartLines `i ~T0 @X0 1 r8 ]
+[v _soc `f ~T0 @X0 1 r8 ]
+[v _uartLines `i ~T0 @X0 1 r9 ]
 [f ]
 [; ;uart.c: 12: clearScreen(uartLines);
 "12
@@ -6940,120 +6944,123 @@ Version 3.2 HI-TECH Software Intermediate Code
 [; ;uart.c: 15: writeCurrent(current);
 "15
 [e ( _writeCurrent (1 _current ]
-[; ;uart.c: 16: }
+[; ;uart.c: 16: writeSOC(soc);
 "16
+[e ( _writeSOC (1 _soc ]
+[; ;uart.c: 17: }
+"17
 [e :UE 753 ]
 }
-"18
+"19
+[v _writeSOC `(v ~T0 @X0 1 ef1`f ]
+{
+[; ;uart.c: 19: void writeSOC(float soc){
+[e :U _writeSOC ]
+[v _soc `f ~T0 @X0 1 r1 ]
+[f ]
+[; ;uart.c: 20: sprintf(&str[0], "SOC = %0.4f percent \n\r", (soc*100));
+"20
+[e ( _sprintf (1 , (. , &U *U + &U _str * -> -> -> 0 `i `ui `ux -> -> # *U &U _str `ui `ux :s 1C -> * _soc -> -> 100 `i `f `d ]
+[; ;uart.c: 21: uartEnable();
+"21
+[e ( _uartEnable ..  ]
+[; ;uart.c: 22: while(PIE1bits.TXIE);
+"22
+[e $U 755  ]
+[e :U 756 ]
+[e :U 755 ]
+[e $ != -> . . _PIE1bits 0 4 `i -> -> -> 0 `i `Vuc `i 756  ]
+[e :U 757 ]
+[; ;uart.c: 23: }
+"23
+[e :UE 754 ]
+}
+"25
 [v _writeVoltages `(v ~T0 @X0 1 ef3`*f`i`f ]
 {
-[; ;uart.c: 18: void writeVoltages(float volts[], int length, float totalVoltage){
+[; ;uart.c: 25: void writeVoltages(float volts[], int length, float totalVoltage){
 [e :U _writeVoltages ]
 [v _volts `*f ~T0 @X0 1 r1 ]
 [v _length `i ~T0 @X0 1 r2 ]
 [v _totalVoltage `f ~T0 @X0 1 r3 ]
 [f ]
-"19
+"26
 [v _maxCell `i ~T0 @X0 1 a ]
-[; ;uart.c: 19: int maxCell = 0;
+[; ;uart.c: 26: int maxCell = 0;
 [e = _maxCell -> 0 `i ]
-"20
+"27
 [v _minCell `i ~T0 @X0 1 a ]
-[; ;uart.c: 20: int minCell = 0;
+[; ;uart.c: 27: int minCell = 0;
 [e = _minCell -> 0 `i ]
-[; ;uart.c: 21: for(int k = 0; k < length; k++){
-"21
+[; ;uart.c: 28: for(int k = 0; k < length; k++){
+"28
 {
 [v _k `i ~T0 @X0 1 a ]
 [e = _k -> 0 `i ]
-[e $U 758  ]
-[e :U 755 ]
-{
-[; ;uart.c: 22: if(volts[k]<volts[minCell]){
-"22
-[e $ ! < *U + _volts * -> _k `x -> -> # *U _volts `i `x *U + _volts * -> _minCell `x -> -> # *U _volts `i `x 759  ]
-{
-[; ;uart.c: 23: minCell = k;
-"23
-[e = _minCell _k ]
-"24
-}
-[; ;uart.c: 24: }else if(volts[k] > volts[maxCell]){
-[e $U 760  ]
-[e :U 759 ]
-[e $ ! > *U + _volts * -> _k `x -> -> # *U _volts `i `x *U + _volts * -> _maxCell `x -> -> # *U _volts `i `x 761  ]
-{
-[; ;uart.c: 25: maxCell = k;
-"25
-[e = _maxCell _k ]
-"26
-}
-[e :U 761 ]
-"28
-[e :U 760 ]
-[; ;uart.c: 26: }
-[; ;uart.c: 28: sprintf(&str[0], "V%i = %0.4fV\n\r", k+1, volts[k]);
-[e ( _sprintf (1 , , (. , &U *U + &U _str * -> -> -> 0 `i `ui `ux -> -> # *U &U _str `ui `ux :s 1C + _k -> 1 `i -> *U + _volts * -> _k `x -> -> # *U _volts `i `x `d ]
-[; ;uart.c: 29: uartEnable();
-"29
-[e ( _uartEnable ..  ]
-[; ;uart.c: 30: while(PIE1bits.TXIE);
-"30
 [e $U 762  ]
-[e :U 763 ]
-[e :U 762 ]
-[e $ != -> . . _PIE1bits 0 4 `i -> -> -> 0 `i `Vuc `i 763  ]
-[e :U 764 ]
-"31
-}
-"21
-[e ++ _k -> 1 `i ]
-[e :U 758 ]
-[e $ < _k _length 755  ]
-[e :U 756 ]
-"31
-}
-[; ;uart.c: 31: }
-[; ;uart.c: 33: sprintf(&str[0], "Pack Voltage: %0.4fV\n\r", totalVoltage);
-"33
-[e ( _sprintf (1 , (. , &U *U + &U _str * -> -> -> 0 `i `ui `ux -> -> # *U &U _str `ui `ux :s 2C -> _totalVoltage `d ]
-[; ;uart.c: 34: uartEnable();
-"34
-[e ( _uartEnable ..  ]
-[; ;uart.c: 35: while(PIE1bits.TXIE);
-"35
-[e $U 765  ]
-[e :U 766 ]
-[e :U 765 ]
-[e $ != -> . . _PIE1bits 0 4 `i -> -> -> 0 `i `Vuc `i 766  ]
-[e :U 767 ]
-[; ;uart.c: 37: sprintf(&str[0], "Max Difference = V%i & V%i @ %0.4fV\n\r", minCell+1, maxCell+1, (volts[maxCell] - volts[minCell]));
-"37
-[e ( _sprintf (1 , , , (. , &U *U + &U _str * -> -> -> 0 `i `ui `ux -> -> # *U &U _str `ui `ux :s 3C + _minCell -> 1 `i + _maxCell -> 1 `i -> - *U + _volts * -> _maxCell `x -> -> # *U _volts `i `x *U + _volts * -> _minCell `x -> -> # *U _volts `i `x `d ]
-[; ;uart.c: 38: uartEnable();
-"38
-[e ( _uartEnable ..  ]
-[; ;uart.c: 39: while(PIE1bits.TXIE);
-"39
-[e $U 768  ]
-[e :U 769 ]
-[e :U 768 ]
-[e $ != -> . . _PIE1bits 0 4 `i -> -> -> 0 `i `Vuc `i 769  ]
-[e :U 770 ]
-[; ;uart.c: 41: }
-"41
-[e :UE 754 ]
-}
-"43
-[v _writeCurrent `(v ~T0 @X0 1 ef1`f ]
+[e :U 759 ]
 {
-[; ;uart.c: 43: void writeCurrent(float current){
-[e :U _writeCurrent ]
-[v _current `f ~T0 @X0 1 r1 ]
-[f ]
-[; ;uart.c: 44: sprintf(&str[0], "current = %0.4fA\n\r", current);
+[; ;uart.c: 29: if(volts[k]<volts[minCell]){
+"29
+[e $ ! < *U + _volts * -> _k `x -> -> # *U _volts `i `x *U + _volts * -> _minCell `x -> -> # *U _volts `i `x 763  ]
+{
+[; ;uart.c: 30: minCell = k;
+"30
+[e = _minCell _k ]
+"31
+}
+[; ;uart.c: 31: }else if(volts[k] > volts[maxCell]){
+[e $U 764  ]
+[e :U 763 ]
+[e $ ! > *U + _volts * -> _k `x -> -> # *U _volts `i `x *U + _volts * -> _maxCell `x -> -> # *U _volts `i `x 765  ]
+{
+[; ;uart.c: 32: maxCell = k;
+"32
+[e = _maxCell _k ]
+"33
+}
+[e :U 765 ]
+"35
+[e :U 764 ]
+[; ;uart.c: 33: }
+[; ;uart.c: 35: sprintf(&str[0], "V%i = %0.4fV\n\r", k+1, volts[k]);
+[e ( _sprintf (1 , , (. , &U *U + &U _str * -> -> -> 0 `i `ui `ux -> -> # *U &U _str `ui `ux :s 2C + _k -> 1 `i -> *U + _volts * -> _k `x -> -> # *U _volts `i `x `d ]
+[; ;uart.c: 36: uartEnable();
+"36
+[e ( _uartEnable ..  ]
+[; ;uart.c: 37: while(PIE1bits.TXIE);
+"37
+[e $U 766  ]
+[e :U 767 ]
+[e :U 766 ]
+[e $ != -> . . _PIE1bits 0 4 `i -> -> -> 0 `i `Vuc `i 767  ]
+[e :U 768 ]
+"38
+}
+"28
+[e ++ _k -> 1 `i ]
+[e :U 762 ]
+[e $ < _k _length 759  ]
+[e :U 760 ]
+"38
+}
+[; ;uart.c: 38: }
+[; ;uart.c: 40: sprintf(&str[0], "Pack Voltage: %0.4fV\n\r", totalVoltage);
+"40
+[e ( _sprintf (1 , (. , &U *U + &U _str * -> -> -> 0 `i `ui `ux -> -> # *U &U _str `ui `ux :s 3C -> _totalVoltage `d ]
+[; ;uart.c: 41: uartEnable();
+"41
+[e ( _uartEnable ..  ]
+[; ;uart.c: 42: while(PIE1bits.TXIE);
+"42
+[e $U 769  ]
+[e :U 770 ]
+[e :U 769 ]
+[e $ != -> . . _PIE1bits 0 4 `i -> -> -> 0 `i `Vuc `i 770  ]
+[e :U 771 ]
+[; ;uart.c: 44: sprintf(&str[0], "Max Difference = V%i & V%i @ %0.4fV\n\r", minCell+1, maxCell+1, (volts[maxCell] - volts[minCell]));
 "44
-[e ( _sprintf (1 , (. , &U *U + &U _str * -> -> -> 0 `i `ui `ux -> -> # *U &U _str `ui `ux :s 4C -> _current `d ]
+[e ( _sprintf (1 , , , (. , &U *U + &U _str * -> -> -> 0 `i `ui `ux -> -> # *U &U _str `ui `ux :s 4C + _minCell -> 1 `i + _maxCell -> 1 `i -> - *U + _volts * -> _maxCell `x -> -> # *U _volts `i `x *U + _volts * -> _minCell `x -> -> # *U _volts `i `x `d ]
 [; ;uart.c: 45: uartEnable();
 "45
 [e ( _uartEnable ..  ]
@@ -7064,194 +7071,219 @@ Version 3.2 HI-TECH Software Intermediate Code
 [e :U 772 ]
 [e $ != -> . . _PIE1bits 0 4 `i -> -> -> 0 `i `Vuc `i 773  ]
 [e :U 774 ]
-[; ;uart.c: 47: }
-"47
-[e :UE 771 ]
-}
+[; ;uart.c: 48: }
 "48
+[e :UE 758 ]
+}
+"50
+[v _writeCurrent `(v ~T0 @X0 1 ef1`f ]
+{
+[; ;uart.c: 50: void writeCurrent(float current){
+[e :U _writeCurrent ]
+[v _current `f ~T0 @X0 1 r1 ]
+[f ]
+[; ;uart.c: 51: sprintf(&str[0], "current = %0.4fA\n\r", current);
+"51
+[e ( _sprintf (1 , (. , &U *U + &U _str * -> -> -> 0 `i `ui `ux -> -> # *U &U _str `ui `ux :s 5C -> _current `d ]
+[; ;uart.c: 52: uartEnable();
+"52
+[e ( _uartEnable ..  ]
+[; ;uart.c: 53: while(PIE1bits.TXIE);
+"53
+[e $U 776  ]
+[e :U 777 ]
+[e :U 776 ]
+[e $ != -> . . _PIE1bits 0 4 `i -> -> -> 0 `i `Vuc `i 777  ]
+[e :U 778 ]
+[; ;uart.c: 54: }
+"54
+[e :UE 775 ]
+}
+"55
 [v _writeTemps `(v ~T0 @X0 1 ef3`*i`i`i ]
 {
-[; ;uart.c: 48: void writeTemps(int temps[], int highestTemp, int numTemps){
+[; ;uart.c: 55: void writeTemps(int temps[], int highestTemp, int numTemps){
 [e :U _writeTemps ]
 [v _temps `*i ~T0 @X0 1 r1 ]
 [v _highestTemp `i ~T0 @X0 1 r2 ]
 [v _numTemps `i ~T0 @X0 1 r3 ]
 [f ]
-[; ;uart.c: 49: for(int k = 0; k<numTemps; k++){
-"49
+[; ;uart.c: 56: for(int k = 0; k<numTemps; k++){
+"56
 {
 [v _k `i ~T0 @X0 1 a ]
 [e = _k -> 0 `i ]
-[e $U 779  ]
-[e :U 776 ]
-{
-[; ;uart.c: 50: sprintf(&str[n], "Temp%i = %iC\n\r", k+1, temps[k]);
-"50
-[e ( _sprintf (1 , , (. , &U *U + &U _str * -> -> _n `ui `ux -> -> # *U &U _str `ui `ux :s 5C + _k -> 1 `i *U + _temps * -> _k `x -> -> # *U _temps `i `x ]
-[; ;uart.c: 51: uartEnable();
-"51
-[e ( _uartEnable ..  ]
-[; ;uart.c: 52: while(PIE1bits.TXIE);
-"52
-[e $U 780  ]
-[e :U 781 ]
-[e :U 780 ]
-[e $ != -> . . _PIE1bits 0 4 `i -> -> -> 0 `i `Vuc `i 781  ]
-[e :U 782 ]
-"53
-}
-"49
-[e ++ _k -> 1 `i ]
-[e :U 779 ]
-[e $ < _k _numTemps 776  ]
-[e :U 777 ]
-"53
-}
-[; ;uart.c: 53: }
-[; ;uart.c: 56: sprintf(&str[0], "Highest Temp: %iC\n\r", highestTemp);
-"56
-[e ( _sprintf (1 , (. , &U *U + &U _str * -> -> -> 0 `i `ui `ux -> -> # *U &U _str `ui `ux :s 6C _highestTemp ]
-[; ;uart.c: 57: uartEnable();
-"57
-[e ( _uartEnable ..  ]
-[; ;uart.c: 58: while(PIE1bits.TXIE);
-"58
 [e $U 783  ]
-[e :U 784 ]
-[e :U 783 ]
-[e $ != -> . . _PIE1bits 0 4 `i -> -> -> 0 `i `Vuc `i 784  ]
-[e :U 785 ]
-[; ;uart.c: 59: }
+[e :U 780 ]
+{
+[; ;uart.c: 57: sprintf(&str[n], "Temp%i = %iC\n\r", k+1, temps[k]);
+"57
+[e ( _sprintf (1 , , (. , &U *U + &U _str * -> -> _n `ui `ux -> -> # *U &U _str `ui `ux :s 6C + _k -> 1 `i *U + _temps * -> _k `x -> -> # *U _temps `i `x ]
+[; ;uart.c: 58: uartEnable();
+"58
+[e ( _uartEnable ..  ]
+[; ;uart.c: 59: while(PIE1bits.TXIE);
 "59
-[e :UE 775 ]
+[e $U 784  ]
+[e :U 785 ]
+[e :U 784 ]
+[e $ != -> . . _PIE1bits 0 4 `i -> -> -> 0 `i `Vuc `i 785  ]
+[e :U 786 ]
+"60
 }
-"61
+"56
+[e ++ _k -> 1 `i ]
+[e :U 783 ]
+[e $ < _k _numTemps 780  ]
+[e :U 781 ]
+"60
+}
+[; ;uart.c: 60: }
+[; ;uart.c: 63: sprintf(&str[0], "Highest Temp: %iC\n\r", highestTemp);
+"63
+[e ( _sprintf (1 , (. , &U *U + &U _str * -> -> -> 0 `i `ui `ux -> -> # *U &U _str `ui `ux :s 7C _highestTemp ]
+[; ;uart.c: 64: uartEnable();
+"64
+[e ( _uartEnable ..  ]
+[; ;uart.c: 65: while(PIE1bits.TXIE);
+"65
+[e $U 787  ]
+[e :U 788 ]
+[e :U 787 ]
+[e $ != -> . . _PIE1bits 0 4 `i -> -> -> 0 `i `Vuc `i 788  ]
+[e :U 789 ]
+[; ;uart.c: 66: }
+"66
+[e :UE 779 ]
+}
+"68
 [v _clearScreen `(v ~T0 @X0 1 ef1`i ]
 {
-[; ;uart.c: 61: void clearScreen(int numLines){
+[; ;uart.c: 68: void clearScreen(int numLines){
 [e :U _clearScreen ]
 [v _numLines `i ~T0 @X0 1 r1 ]
 [f ]
-"62
+"69
 [v _j `i ~T0 @X0 1 a ]
-[; ;uart.c: 62: int j = 0;
+[; ;uart.c: 69: int j = 0;
 [e = _j -> 0 `i ]
-[; ;uart.c: 64: for(j = 0; j < numLines-1; j++){
-"64
-{
-[e = _j -> 0 `i ]
-[e $U 790  ]
-[e :U 787 ]
-{
-[; ;uart.c: 65: sprintf(&str[0], "\33[2K \033[A");
-"65
-[e ( _sprintf (1 , &U *U + &U _str * -> -> -> 0 `i `ui `ux -> -> # *U &U _str `ui `ux :s 7C ]
-[; ;uart.c: 66: uartEnable();
-"66
-[e ( _uartEnable ..  ]
-[; ;uart.c: 67: while(PIE1bits.TXIE);
-"67
-[e $U 791  ]
-[e :U 792 ]
-[e :U 791 ]
-[e $ != -> . . _PIE1bits 0 4 `i -> -> -> 0 `i `Vuc `i 792  ]
-[e :U 793 ]
-"68
-}
-"64
-[e ++ _j -> 1 `i ]
-[e :U 790 ]
-[e $ < _j - _numLines -> 1 `i 787  ]
-[e :U 788 ]
-"68
-}
-[; ;uart.c: 68: }
-[; ;uart.c: 70: sprintf(&str[0], "\33[2K \033[A \r");
-"70
-[e ( _sprintf (1 , &U *U + &U _str * -> -> -> 0 `i `ui `ux -> -> # *U &U _str `ui `ux :s 8C ]
-[; ;uart.c: 71: uartEnable();
+[; ;uart.c: 71: for(j = 0; j < numLines-1; j++){
 "71
-[e ( _uartEnable ..  ]
-[; ;uart.c: 72: while(PIE1bits.TXIE);
-"72
+{
+[e = _j -> 0 `i ]
 [e $U 794  ]
-[e :U 795 ]
-[e :U 794 ]
-[e $ != -> . . _PIE1bits 0 4 `i -> -> -> 0 `i `Vuc `i 795  ]
-[e :U 796 ]
-[; ;uart.c: 73: }
+[e :U 791 ]
+{
+[; ;uart.c: 72: sprintf(&str[0], "\33[2K \033[A");
+"72
+[e ( _sprintf (1 , &U *U + &U _str * -> -> -> 0 `i `ui `ux -> -> # *U &U _str `ui `ux :s 8C ]
+[; ;uart.c: 73: uartEnable();
 "73
-[e :UE 786 ]
-}
+[e ( _uartEnable ..  ]
+[; ;uart.c: 74: while(PIE1bits.TXIE);
+"74
+[e $U 795  ]
+[e :U 796 ]
+[e :U 795 ]
+[e $ != -> . . _PIE1bits 0 4 `i -> -> -> 0 `i `Vuc `i 796  ]
+[e :U 797 ]
 "75
+}
+"71
+[e ++ _j -> 1 `i ]
+[e :U 794 ]
+[e $ < _j - _numLines -> 1 `i 791  ]
+[e :U 792 ]
+"75
+}
+[; ;uart.c: 75: }
+[; ;uart.c: 77: sprintf(&str[0], "\33[2K \033[A \r");
+"77
+[e ( _sprintf (1 , &U *U + &U _str * -> -> -> 0 `i `ui `ux -> -> # *U &U _str `ui `ux :s 9C ]
+[; ;uart.c: 78: uartEnable();
+"78
+[e ( _uartEnable ..  ]
+[; ;uart.c: 79: while(PIE1bits.TXIE);
+"79
+[e $U 798  ]
+[e :U 799 ]
+[e :U 798 ]
+[e $ != -> . . _PIE1bits 0 4 `i -> -> -> 0 `i `Vuc `i 799  ]
+[e :U 800 ]
+[; ;uart.c: 80: }
+"80
+[e :UE 790 ]
+}
+"82
 [v _uartEnable `(v ~T0 @X0 1 ef ]
 {
-[; ;uart.c: 75: void uartEnable(){
+[; ;uart.c: 82: void uartEnable(){
 [e :U _uartEnable ]
 [f ]
-[; ;uart.c: 76: PIE1bits.TXIE = 1;
-"76
+[; ;uart.c: 83: PIE1bits.TXIE = 1;
+"83
 [e = . . _PIE1bits 0 4 -> -> 1 `i `uc ]
-[; ;uart.c: 77: }
-"77
-[e :UE 797 ]
+[; ;uart.c: 84: }
+"84
+[e :UE 801 ]
 }
-"79
+"86
 [v _uartDisable `(v ~T0 @X0 1 ef ]
 {
-[; ;uart.c: 79: void uartDisable(){
+[; ;uart.c: 86: void uartDisable(){
 [e :U _uartDisable ]
 [f ]
-[; ;uart.c: 80: PIE1bits.TXIE = 0;
-"80
+[; ;uart.c: 87: PIE1bits.TXIE = 0;
+"87
 [e = . . _PIE1bits 0 4 -> -> 0 `i `uc ]
-[; ;uart.c: 81: }
-"81
-[e :UE 798 ]
+[; ;uart.c: 88: }
+"88
+[e :UE 802 ]
 }
-"83
+"90
 [v _uartSetup `(v ~T0 @X0 1 ef ]
 {
-[; ;uart.c: 83: void uartSetup(){
+[; ;uart.c: 90: void uartSetup(){
 [e :U _uartSetup ]
 [f ]
-[; ;uart.c: 84: TXSTAbits.TX9 = 0;
-"84
-[e = . . _TXSTAbits 0 6 -> -> 0 `i `uc ]
-[; ;uart.c: 85: TXSTAbits.TXEN = 1;
-"85
-[e = . . _TXSTAbits 0 5 -> -> 1 `i `uc ]
-[; ;uart.c: 86: TXSTAbits.SYNC = 0;
-"86
-[e = . . _TXSTAbits 0 4 -> -> 0 `i `uc ]
-[; ;uart.c: 87: TXSTAbits.BRGH = 0;
-"87
-[e = . . _TXSTAbits 0 2 -> -> 0 `i `uc ]
-[; ;uart.c: 88: RCSTAbits.RX9 = 0;
-"88
-[e = . . _RCSTAbits 0 6 -> -> 0 `i `uc ]
-[; ;uart.c: 89: RCSTAbits.SPEN = 1;
-"89
-[e = . . _RCSTAbits 0 7 -> -> 1 `i `uc ]
-[; ;uart.c: 90: SPBRGH = 0;
-"90
-[e = _SPBRGH -> -> 0 `i `uc ]
-[; ;uart.c: 91: SPBRGL = 2;
+[; ;uart.c: 91: TXSTAbits.TX9 = 0;
 "91
-[e = _SPBRGL -> -> 2 `i `uc ]
-[; ;uart.c: 92: PIR1bits.TXIF = 0;
+[e = . . _TXSTAbits 0 6 -> -> 0 `i `uc ]
+[; ;uart.c: 92: TXSTAbits.TXEN = 1;
 "92
-[e = . . _PIR1bits 0 4 -> -> 0 `i `uc ]
-[; ;uart.c: 93: }
+[e = . . _TXSTAbits 0 5 -> -> 1 `i `uc ]
+[; ;uart.c: 93: TXSTAbits.SYNC = 0;
 "93
-[e :UE 799 ]
+[e = . . _TXSTAbits 0 4 -> -> 0 `i `uc ]
+[; ;uart.c: 94: TXSTAbits.BRGH = 0;
+"94
+[e = . . _TXSTAbits 0 2 -> -> 0 `i `uc ]
+[; ;uart.c: 95: RCSTAbits.RX9 = 0;
+"95
+[e = . . _RCSTAbits 0 6 -> -> 0 `i `uc ]
+[; ;uart.c: 96: RCSTAbits.SPEN = 1;
+"96
+[e = . . _RCSTAbits 0 7 -> -> 1 `i `uc ]
+[; ;uart.c: 97: SPBRGH = 0;
+"97
+[e = _SPBRGH -> -> 0 `i `uc ]
+[; ;uart.c: 98: SPBRGL = 2;
+"98
+[e = _SPBRGL -> -> 2 `i `uc ]
+[; ;uart.c: 99: PIR1bits.TXIF = 0;
+"99
+[e = . . _PIR1bits 0 4 -> -> 0 `i `uc ]
+[; ;uart.c: 100: }
+"100
+[e :UE 803 ]
 }
 [p f _sprintf 8462468 ]
-[a 7C 27 91 50 75 32 27 91 65 0 ]
-[a 8C 27 91 50 75 32 27 91 65 32 13 0 ]
-[a 3C 77 97 120 32 68 105 102 102 101 114 101 110 99 101 32 61 32 86 37 105 32 38 32 86 37 105 32 64 32 37 48 46 52 102 86 10 13 0 ]
-[a 1C 86 37 105 32 61 32 37 48 46 52 102 86 10 13 0 ]
-[a 2C 80 97 99 107 32 86 111 108 116 97 103 101 58 32 37 48 46 52 102 86 10 13 0 ]
-[a 5C 84 101 109 112 37 105 32 61 32 37 105 67 10 13 0 ]
-[a 6C 72 105 103 104 101 115 116 32 84 101 109 112 58 32 37 105 67 10 13 0 ]
-[a 4C 99 117 114 114 101 110 116 32 61 32 37 48 46 52 102 65 10 13 0 ]
+[a 8C 27 91 50 75 32 27 91 65 0 ]
+[a 9C 27 91 50 75 32 27 91 65 32 13 0 ]
+[a 4C 77 97 120 32 68 105 102 102 101 114 101 110 99 101 32 61 32 86 37 105 32 38 32 86 37 105 32 64 32 37 48 46 52 102 86 10 13 0 ]
+[a 2C 86 37 105 32 61 32 37 48 46 52 102 86 10 13 0 ]
+[a 3C 80 97 99 107 32 86 111 108 116 97 103 101 58 32 37 48 46 52 102 86 10 13 0 ]
+[a 6C 84 101 109 112 37 105 32 61 32 37 105 67 10 13 0 ]
+[a 7C 72 105 103 104 101 115 116 32 84 101 109 112 58 32 37 105 67 10 13 0 ]
+[a 5C 99 117 114 114 101 110 116 32 61 32 37 48 46 52 102 65 10 13 0 ]
+[a 1C 83 79 67 32 61 32 37 48 46 52 102 32 112 101 114 99 101 110 116 32 10 13 0 ]

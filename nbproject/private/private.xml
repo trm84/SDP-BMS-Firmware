@@ -5,9 +5,12 @@
         <group>
             <file>file:/C:/Users/trm84.UANET/MPLABXProjects/SDP-BMS-Firmware/timer.h</file>
             <file>file:/C:/Users/trm84.UANET/MPLABXProjects/SDP-BMS-Firmware/ltc6804.c</file>
+            <file>file:/C:/Users/trm84.UANET/MPLABXProjects/SDP-BMS-Firmware/adc.h</file>
             <file>file:/C:/Users/trm84.UANET/MPLABXProjects/SDP-BMS-Firmware/uart.c</file>
+            <file>file:/C:/Users/trm84.UANET/MPLABXProjects/SDP-BMS-Firmware/uart.h</file>
             <file>file:/C:/Users/trm84.UANET/MPLABXProjects/SDP-BMS-Firmware/main.c</file>
             <file>file:/C:/Users/trm84.UANET/MPLABXProjects/SDP-BMS-Firmware/ltc6804.h</file>
+            <file>file:/C:/Users/trm84.UANET/MPLABXProjects/SDP-BMS-Firmware/adc.c</file>
         </group>
     </open-files>
 </project-private>

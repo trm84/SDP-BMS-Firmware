@@ -38,7 +38,7 @@
     int n; //Array Location
     
 //Prototypes
-    void writeValuesToUart(float voltageArr[], int voltageArrLength, float totalVoltage, int temperatureArr[], int temperatureArrLength, int temperatureHigh, float current, int uartLines);
+    void writeValuesToUart(float voltageArr[], int voltageArrLength, float totalVoltage, int temperatureArr[], int temperatureArrLength, int temperatureHigh, float current, float soc, int uartLines);
     void uartSetup();
     void writeVoltages(float volts[], int length, float totalVoltage);
     void writeTemps(int temps[], int highestTemp, int numTemps);
@@ -46,3 +46,4 @@
     void uartEnable();
     void uartDisable();
     void writeCurrent(float current);
+    void writeSOC(float soc);

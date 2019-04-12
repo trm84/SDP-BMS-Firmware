@@ -9492,7 +9492,7 @@ char str[50];
 int n;
 
 
-void writeValuesToUart(float voltageArr[], int voltageArrLength, float totalVoltage, int temperatureArr[], int temperatureArrLength, int temperatureHigh, float current, int uartLines);
+void writeValuesToUart(float voltageArr[], int voltageArrLength, float totalVoltage, int temperatureArr[], int temperatureArrLength, int temperatureHigh, float current, float soc, int uartLines);
 void uartSetup();
 void writeVoltages(float volts[], int length, float totalVoltage);
 void writeTemps(int temps[], int highestTemp, int numTemps);
@@ -9500,13 +9500,21 @@ void clearScreen(int numLines);
 void uartEnable();
 void uartDisable();
 void writeCurrent(float current);
+void writeSOC(float soc);
 
 # 11 "uart.c"
-void writeValuesToUart(float voltageArr[], int voltageArrLength, float totalVoltage, int temperatureArr[], int temperatureArrLength, int temperatureHigh, float current, int uartLines){
+void writeValuesToUart(float voltageArr[], int voltageArrLength, float totalVoltage, int temperatureArr[], int temperatureArrLength, int temperatureHigh, float current, float soc, int uartLines){
 clearScreen(uartLines);
 writeVoltages(voltageArr, voltageArrLength, totalVoltage);
 writeTemps(temperatureArr, temperatureHigh , temperatureArrLength);
 writeCurrent(current);
+writeSOC(soc);
+}
+
+void writeSOC(float soc){
+sprintf(&str[0], "SOC = %0.4f percent \n\r", (soc*100));
+uartEnable();
+while(PIE1bits.TXIE);
 }
 
 void writeVoltages(float volts[], int length, float totalVoltage){

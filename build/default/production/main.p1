@@ -1,6 +1,6 @@
 Version 3.2 HI-TECH Software Intermediate Code
 [p mainexit ]
-"31 main.c
+"33 main.c
 [v _setup `(v ~T0 @X0 0 ef ]
 [v F7388 `(v ~T0 @X0 1 tf1`ul ]
 "153 C:\Program Files (x86)\Microchip\xc8\v1.45\include\pic.h
@@ -17,7 +17,9 @@ Version 3.2 HI-TECH Software Intermediate Code
 [n S134 . . . ]
 "2733
 [v _LATDbits `VS134 ~T0 @X0 0 e@271 ]
-"2509
+"34 main.c
+[v _startUp `(i ~T0 @X0 0 ef6`*i`*i`*f`*f`*f`*f ]
+"2509 C:\Program Files (x86)\Microchip\xc8\v1.45\include\pic16f1789.h
 [s S126 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 ]
 [n S126 . LATA0 LATA1 LATA2 LATA3 LATA4 LATA5 LATA6 LATA7 ]
 "2519
@@ -39,7 +41,7 @@ Version 3.2 HI-TECH Software Intermediate Code
 "51 adc.h
 [v _avgBuff `(f ~T0 @X0 0 ef2`*f`i ]
 "41 uart.h
-[v _writeValuesToUart `(v ~T0 @X0 0 ef8`*f`i`f`*i`i`i`f`i ]
+[v _writeValuesToUart `(v ~T0 @X0 0 ef9`*f`i`f`*i`i`i`f`f`i ]
 "11 ltc6804.h
 [v _sumVoltages `(f ~T0 @X0 0 ef2`*f`i ]
 "355 C:\Program Files (x86)\Microchip\xc8\v1.45\include\pic16f1789.h
@@ -7454,7 +7456,7 @@ Version 3.2 HI-TECH Software Intermediate Code
 "38
 [v _n `i ~T0 @X0 1 e ]
 [; ;uart.h: 38: int n;
-[; ;uart.h: 41: void writeValuesToUart(float voltageArr[], int voltageArrLength, float totalVoltage, int temperatureArr[], int temperatureArrLength, int temperatureHigh, float current, int uartLines);
+[; ;uart.h: 41: void writeValuesToUart(float voltageArr[], int voltageArrLength, float totalVoltage, int temperatureArr[], int temperatureArrLength, int temperatureHigh, float current, float soc, int uartLines);
 [; ;uart.h: 42: void uartSetup();
 [; ;uart.h: 43: void writeVoltages(float volts[], int length, float totalVoltage);
 [; ;uart.h: 44: void writeTemps(int temps[], int highestTemp, int numTemps);
@@ -7462,6 +7464,7 @@ Version 3.2 HI-TECH Software Intermediate Code
 [; ;uart.h: 46: void uartEnable();
 [; ;uart.h: 47: void uartDisable();
 [; ;uart.h: 48: void writeCurrent(float current);
+[; ;uart.h: 49: void writeSOC(float soc);
 [; ;timer.h: 38: void timer0Setup();
 [; ;timer.h: 39: void timer2Setup();
 [; ;timer.h: 40: void timerSetup();
@@ -7517,9 +7520,9 @@ Version 3.2 HI-TECH Software Intermediate Code
 [; ;SSD1306.h: 62: void oledPutChar( char ch );
 [; ;SSD1306.h: 63: void oledClear();
 [; ;SSD1306.h: 64: void oledGotoYX(unsigned char Row, unsigned char Column);
-[v F7693 `Cuc ~T0 @X0 -> 8 `i t ]
+[v F7696 `Cuc ~T0 @X0 -> 8 `i t ]
 "66 SSD1306.h
-[v _OledFont `F7693 ~T0 @X0 -> 0 `x e ]
+[v _OledFont `F7696 ~T0 @X0 -> 0 `x e ]
 [i _OledFont
 :U ..
 :U ..
@@ -8713,10 +8716,10 @@ Version 3.2 HI-TECH Software Intermediate Code
 [p x LPBOR=OFF ]
 "24
 [p x LVP=OFF ]
-[; ;main.c: 31: void setup();
-[; ;main.c: 32: int startUp(int highestTemp, int temps[], float voltages[], float totalVoltage, float current, int soc);
-[; ;main.c: 33: char running();
-"36 main.c
+[; ;main.c: 33: void setup();
+[; ;main.c: 34: int startUp(int *highestTemp, int temps[], float voltages[], float *totalVoltage, float *current, float *soc);
+[; ;main.c: 35: char running();
+"38 main.c
 [v _j `i ~T0 @X0 1 e ]
 [i _j
 -> 0 `i
@@ -8729,121 +8732,127 @@ Version 3.2 HI-TECH Software Intermediate Code
 [i _z
 -> 0 `i
 ]
-[; ;main.c: 36: int j = 0, k = 0 , z = 0;
-"37
+[; ;main.c: 38: int j = 0, k = 0 , z = 0;
+"39
 [v _uartBool `i ~T0 @X0 1 e ]
 [i _uartBool
 -> 0 `i
 ]
-[; ;main.c: 37: int uartBool = 0;
-"38
+[; ;main.c: 39: int uartBool = 0;
+"40
 [v _currentBool `i ~T0 @X0 1 e ]
 [i _currentBool
 -> 0 `i
 ]
-[; ;main.c: 38: int currentBool = 0;
+[; ;main.c: 40: int currentBool = 0;
 [v $root$_main `(v ~T0 @X0 0 e ]
-"46
+"48
 [v _main `(v ~T0 @X0 1 ef ]
 {
-[; ;main.c: 46: void main(void){
+[; ;main.c: 48: void main(void){
 [e :U _main ]
 [f ]
-"47
+"49
 [v _voltages `f ~T0 @X0 -> 12 `i a ]
-"48
-[v _totalVoltage `f ~T0 @X0 1 a ]
 "50
-[v _currentIndex `i ~T0 @X0 1 a ]
-[; ;main.c: 47: float voltages[12];
-[; ;main.c: 48: float totalVoltage;
-[; ;main.c: 50: int currentIndex = 0;
-[e = _currentIndex -> 0 `i ]
-"51
-[v _currentBuff `f ~T0 @X0 -> 20 `i a ]
+[v _totalVoltage `f ~T0 @X0 1 a ]
 "52
-[v _current `f ~T0 @X0 1 a ]
-[; ;main.c: 51: float currentBuff[20];
-[; ;main.c: 52: float current = 0;
-[e = _current -> -> 0 `i `f ]
+[v _currentIndex `i ~T0 @X0 1 a ]
+[; ;main.c: 49: float voltages[12];
+[; ;main.c: 50: float totalVoltage;
+[; ;main.c: 52: int currentIndex = 0;
+[e = _currentIndex -> 0 `i ]
+"53
+[v _currentBuff `f ~T0 @X0 -> 20 `i a ]
 "54
+[v _current `f ~T0 @X0 1 a ]
+[; ;main.c: 53: float currentBuff[20];
+[; ;main.c: 54: float current = 0;
+[e = _current -> -> 0 `i `f ]
+"56
 [v _temps `i ~T0 @X0 -> 5 `i a ]
-"55
-[v _highestTemp `i ~T0 @X0 1 a ]
 "57
+[v _highestTemp `i ~T0 @X0 1 a ]
+"59
 [v _numFaults `i ~T0 @X0 1 a ]
-[; ;main.c: 54: int temps[5];
-[; ;main.c: 55: int highestTemp;
-[; ;main.c: 57: int numFaults = 0;
+[; ;main.c: 56: int temps[5];
+[; ;main.c: 57: int highestTemp;
+[; ;main.c: 59: int numFaults = 0;
 [e = _numFaults -> 0 `i ]
-"58
-[v _soc `i ~T0 @X0 1 a ]
-[; ;main.c: 58: int soc = 0;
-[e = _soc -> 0 `i ]
-[; ;main.c: 60: setup();
 "60
-[e ( _setup ..  ]
-[; ;main.c: 62: _delay((unsigned long)((1000)*(32000000/4000.0)));
+[v _soc `f ~T0 @X0 1 a ]
+[; ;main.c: 60: float soc = 0;
+[e = _soc -> -> 0 `i `f ]
 "62
-[e ( __delay (1 -> * -> -> 1000 `i `d / -> -> 32000000 `l `d .4000.0 `ul ]
-[; ;main.c: 64: LATDbits.LATD5 = 0;
-"64
-[e = . . _LATDbits 0 5 -> -> 0 `i `uc ]
-[; ;main.c: 65: LATDbits.LATD4 = 0;
+[v F7722 `Cui ~T0 @X0 1 s total_capacity ]
+[i F7722
+-> * -> 12 `i -> 3600 `i `ui
+]
+[; ;main.c: 62: const unsigned int total_capacity = 12*3600;
+[; ;main.c: 63: setup();
+"63
+[e ( _setup ..  ]
+[; ;main.c: 65: _delay((unsigned long)((1000)*(32000000/4000.0)));
 "65
-[e = . . _LATDbits 0 4 -> -> 0 `i `uc ]
-[; ;main.c: 67: LATDbits.LATD5 = 1;
-"67
+[e ( __delay (1 -> * -> -> 1000 `i `d / -> -> 32000000 `l `d .4000.0 `ul ]
+[; ;main.c: 69: LATDbits.LATD5 = startUp(&highestTemp, temps, voltages, &totalVoltage, &current, &soc);
+"69
+[e = . . _LATDbits 0 5 -> ( _startUp (4 , , , , , &U _highestTemp &U _temps &U _voltages &U _totalVoltage &U _current &U _soc `uc ]
+[; ;main.c: 70: LATDbits.LATD5 = 1;
+"70
 [e = . . _LATDbits 0 5 -> -> 1 `i `uc ]
-[; ;main.c: 77: while(1){
-"77
+[; ;main.c: 80: while(1){
+"80
 [e :U 755 ]
 {
-[; ;main.c: 81: LATAbits.LATA5 ^= 1;
-"81
+[; ;main.c: 84: LATAbits.LATA5 ^= 1;
+"84
 [e =^ . . _LATAbits 0 5 -> -> 1 `i `uc ]
-[; ;main.c: 85: measureVoltages(voltages, &totalVoltage, 12);
-"85
+[; ;main.c: 88: measureVoltages(voltages, &totalVoltage, 12);
+"88
 [e ( _measureVoltages (3 , , &U _voltages &U _totalVoltage -> 12 `i ]
-[; ;main.c: 87: highestTemp = getTemps(temps, 5);
-"87
+[; ;main.c: 90: highestTemp = getTemps(temps, 5);
+"90
 [e = _highestTemp ( _getTemps (2 , &U _temps -> 5 `i ]
-[; ;main.c: 89: if(currentBool == 1){
-"89
+[; ;main.c: 92: if(currentBool == 1){
+"92
 [e $ ! == _currentBool -> 1 `i 757  ]
 {
-[; ;main.c: 90: currentBuff[currentIndex] = getCurrent();
-"90
+[; ;main.c: 93: currentBuff[currentIndex] = getCurrent();
+"93
 [e = *U + &U _currentBuff * -> -> _currentIndex `ui `ux -> -> # *U &U _currentBuff `ui `ux ( _getCurrent ..  ]
-[; ;main.c: 91: currentIndex ++;
-"91
+[; ;main.c: 94: currentIndex ++;
+"94
 [e ++ _currentIndex -> 1 `i ]
-[; ;main.c: 92: if(currentIndex >= 20){
-"92
+[; ;main.c: 95: if(currentIndex >= 20){
+"95
 [e $ ! >= _currentIndex -> 20 `i 758  ]
 {
-[; ;main.c: 93: cellBalancing(voltages, 12);
-"93
-[e ( _cellBalancing (2 , &U _voltages -> 12 `i ]
-[; ;main.c: 94: current = avgBuff(currentBuff, currentIndex);
-"94
-[e = _current ( _avgBuff (2 , &U _currentBuff _currentIndex ]
-[; ;main.c: 95: currentIndex = 0;
-"95
-[e = _currentIndex -> 0 `i ]
+[; ;main.c: 96: cellBalancing(voltages, 12);
 "96
+[e ( _cellBalancing (2 , &U _voltages -> 12 `i ]
+[; ;main.c: 97: current = avgBuff(currentBuff, currentIndex);
+"97
+[e = _current ( _avgBuff (2 , &U _currentBuff _currentIndex ]
+[; ;main.c: 99: soc = ((((soc)*(float)total_capacity) - (current/500.0))/((float)(total_capacity)));
+"99
+[e = _soc -> / - -> * _soc -> F7722 `f `d / -> _current `d .500.0 -> -> F7722 `f `d `f ]
+[; ;main.c: 101: currentIndex = 0;
+"101
+[e = _currentIndex -> 0 `i ]
+"102
 }
 [e :U 758 ]
-[; ;main.c: 96: }
-[; ;main.c: 97: currentBool = 0;
-"97
+[; ;main.c: 102: }
+[; ;main.c: 103: currentBool = 0;
+"103
 [e = _currentBool -> 0 `i ]
-"98
+"104
 }
 [e :U 757 ]
-[; ;main.c: 98: }
-[; ;main.c: 103: for(int i = 0; i <5; i++){
-"103
+[; ;main.c: 104: }
+[; ;main.c: 109: for(int i = 0; i <5; i++){
+"109
 {
 [v _i `i ~T0 @X0 1 a ]
 [e = _i -> 0 `i ]
@@ -8851,377 +8860,377 @@ Version 3.2 HI-TECH Software Intermediate Code
 [e $U 760  ]
 [e :U 759 ]
 {
-[; ;main.c: 104: if(temps[i] >= 40 || temps[i] <= 10){
-"104
+[; ;main.c: 110: if(temps[i] >= 40 || temps[i] <= 10){
+"110
 [e $ ! || >= *U + &U _temps * -> -> _i `ui `ux -> -> # *U &U _temps `ui `ux -> 40 `i <= *U + &U _temps * -> -> _i `ui `ux -> -> # *U &U _temps `ui `ux -> 10 `i 762  ]
 {
-[; ;main.c: 105: numFaults++;
-"105
+[; ;main.c: 111: numFaults++;
+"111
 [e ++ _numFaults -> 1 `i ]
-"106
+"112
 }
 [e :U 762 ]
-"107
+"113
 }
-"103
+"109
 [e ++ _i -> 1 `i ]
 [e $ < _i -> 5 `i 759  ]
 [e :U 760 ]
-"107
+"113
 }
-[; ;main.c: 106: }
-[; ;main.c: 107: }
-[; ;main.c: 109: if(current >= 10){
-"109
+[; ;main.c: 112: }
+[; ;main.c: 113: }
+[; ;main.c: 115: if(current >= 10){
+"115
 [e $ ! >= _current -> -> 10 `i `f 763  ]
 {
-[; ;main.c: 110: numFaults++;
-"110
-[e ++ _numFaults -> 1 `i ]
-"111
-}
-[e :U 763 ]
-[; ;main.c: 111: }
-[; ;main.c: 115: if(numFaults >= 10){
-"115
-[e $ ! >= _numFaults -> 10 `i 764  ]
-{
-[; ;main.c: 116: LATDbits.LATD5 = 0;
+[; ;main.c: 116: numFaults++;
 "116
-[e = . . _LATDbits 0 5 -> -> 0 `i `uc ]
+[e ++ _numFaults -> 1 `i ]
 "117
 }
-[e :U 764 ]
+[e :U 763 ]
 [; ;main.c: 117: }
-[; ;main.c: 122: if(uartBool == 1){
+[; ;main.c: 121: if(numFaults >= 10){
+"121
+[e $ ! >= _numFaults -> 10 `i 764  ]
+{
+[; ;main.c: 122: LATDbits.LATD5 = 0;
 "122
+[e = . . _LATDbits 0 5 -> -> 0 `i `uc ]
+"123
+}
+[e :U 764 ]
+[; ;main.c: 123: }
+[; ;main.c: 128: if(uartBool == 1){
+"128
 [e $ ! == _uartBool -> 1 `i 765  ]
 {
-[; ;main.c: 123: writeValuesToUart(voltages, 12, totalVoltage, temps, 5, highestTemp, current, 21);
-"123
-[e ( _writeValuesToUart (4 , , , , , , , &U _voltages -> 12 `i _totalVoltage &U _temps -> 5 `i _highestTemp _current -> 21 `i ]
-[; ;main.c: 124: uartBool = 0;
-"124
+[; ;main.c: 129: writeValuesToUart(voltages, 12, totalVoltage, temps, 5, highestTemp, current, soc, 22);
+"129
+[e ( _writeValuesToUart (4 , , , , , , , , &U _voltages -> 12 `i _totalVoltage &U _temps -> 5 `i _highestTemp _current _soc -> 22 `i ]
+[; ;main.c: 130: uartBool = 0;
+"130
 [e = _uartBool -> 0 `i ]
-"125
+"131
 }
 [e :U 765 ]
-"129
+"135
 }
 [e :U 754 ]
-"77
+"80
 [e $U 755  ]
 [e :U 756 ]
-[; ;main.c: 125: }
-[; ;main.c: 129: }
-[; ;main.c: 130: }
-"130
+[; ;main.c: 131: }
+[; ;main.c: 135: }
+[; ;main.c: 136: }
+"136
 [e :UE 753 ]
 }
-"138
-[v _startUp `(i ~T0 @X0 1 ef6`i`*i`*f`f`f`i ]
+"144
+[v _startUp `(i ~T0 @X0 1 ef6`*i`*i`*f`*f`*f`*f ]
 {
-[; ;main.c: 138: int startUp(int highestTemp, int temps[], float voltages[], float totalVoltage, float current, int soc){
+[; ;main.c: 144: int startUp(int *highestTemp, int temps[], float voltages[], float *totalVoltage, float *current, float *soc){
 [e :U _startUp ]
-[v _highestTemp `i ~T0 @X0 1 r1 ]
+[v _highestTemp `*i ~T0 @X0 1 r1 ]
 [v _temps `*i ~T0 @X0 1 r2 ]
 [v _voltages `*f ~T0 @X0 1 r3 ]
-[v _totalVoltage `f ~T0 @X0 1 r4 ]
-[v _current `f ~T0 @X0 1 r5 ]
-[v _soc `i ~T0 @X0 1 r6 ]
+[v _totalVoltage `*f ~T0 @X0 1 r4 ]
+[v _current `*f ~T0 @X0 1 r5 ]
+[v _soc `*f ~T0 @X0 1 r6 ]
 [f ]
-[; ;main.c: 139: highestTemp = getTemps(temps, 5);
-"139
-[e = _highestTemp ( _getTemps (2 , _temps -> 5 `i ]
-[; ;main.c: 140: for(int i = 0; i < 5; i++){
-"140
+[; ;main.c: 145: measureVoltages(voltages, totalVoltage, 12);
+"145
+[e ( _measureVoltages (3 , , _voltages _totalVoltage -> 12 `i ]
+[; ;main.c: 146: for(int i = 0; i < 12; i++){
+"146
 {
 [v _i `i ~T0 @X0 1 a ]
 [e = _i -> 0 `i ]
-[e $ < _i -> 5 `i 767  ]
+[e $ < _i -> 12 `i 767  ]
 [e $U 768  ]
 [e :U 767 ]
 {
-[; ;main.c: 141: if(temps[i] < 5 || temps[i] > 40){
-"141
-[e $ ! || < *U + _temps * -> _i `x -> -> # *U _temps `i `x -> 5 `i > *U + _temps * -> _i `x -> -> # *U _temps `i `x -> 40 `i 770  ]
+[; ;main.c: 147: if(voltages[i] > 4.2 || voltages[i] < 3.1){
+"147
+[e $ ! || > -> *U + _voltages * -> _i `x -> -> # *U _voltages `i `x `d .4.2 < -> *U + _voltages * -> _i `x -> -> # *U _voltages `i `x `d .3.1 770  ]
 {
-[; ;main.c: 145: return 0;
-"145
+[; ;main.c: 149: return 0;
+"149
 [e ) -> 0 `i ]
 [e $UE 766  ]
-"146
+"150
 }
 [e :U 770 ]
-"147
+"151
 }
-"140
+"146
 [e ++ _i -> 1 `i ]
-[e $ < _i -> 5 `i 767  ]
+[e $ < _i -> 12 `i 767  ]
 [e :U 768 ]
-"147
+"151
 }
-[; ;main.c: 146: }
-[; ;main.c: 147: }
-[; ;main.c: 149: current = getCurrent();
-"149
-[e = _current ( _getCurrent ..  ]
-[; ;main.c: 150: if(current < -2 || current > 2){
-"150
-[e $ ! || < _current -> -U -> 2 `i `f > _current -> -> 2 `i `f 771  ]
-{
-[; ;main.c: 152: return 0;
+[; ;main.c: 150: }
+[; ;main.c: 151: }
+[; ;main.c: 152: *totalVoltage = sumVoltages(voltages, 12);
 "152
-[e ) -> 0 `i ]
-[e $UE 766  ]
+[e = *U _totalVoltage ( _sumVoltages (2 , _voltages -> 12 `i ]
+[; ;main.c: 153: *soc = ((float)(*totalVoltage) - (float)38.4) / ((float)50.4 - (float)38.4);
 "153
-}
-[e :U 771 ]
-[; ;main.c: 153: }
-[; ;main.c: 155: measureVoltages(voltages, &totalVoltage, 12);
+[e = *U _soc / - *U _totalVoltage -> .38.4 `f - -> .50.4 `f -> .38.4 `f ]
+[; ;main.c: 155: *highestTemp = getTemps(temps, 5);
 "155
-[e ( _measureVoltages (3 , , _voltages &U _totalVoltage -> 12 `i ]
-[; ;main.c: 156: for(int i = 0; i < 12; i++){
+[e = *U _highestTemp ( _getTemps (2 , _temps -> 5 `i ]
+[; ;main.c: 156: for(int i = 0; i < 5; i++){
 "156
 {
 [v _i `i ~T0 @X0 1 a ]
 [e = _i -> 0 `i ]
-[e $ < _i -> 12 `i 772  ]
-[e $U 773  ]
-[e :U 772 ]
+[e $ < _i -> 5 `i 771  ]
+[e $U 772  ]
+[e :U 771 ]
 {
-[; ;main.c: 157: if(voltages[i] > 4.2 || voltages[i] < 3.1){
+[; ;main.c: 157: if(temps[i] < 5 || temps[i] > 40){
 "157
-[e $ ! || > -> *U + _voltages * -> _i `x -> -> # *U _voltages `i `x `d .4.2 < -> *U + _voltages * -> _i `x -> -> # *U _voltages `i `x `d .3.1 775  ]
+[e $ ! || < *U + _temps * -> _i `x -> -> # *U _temps `i `x -> 5 `i > *U + _temps * -> _i `x -> -> # *U _temps `i `x -> 40 `i 774  ]
 {
-[; ;main.c: 159: return 0;
-"159
+[; ;main.c: 161: return 0;
+"161
 [e ) -> 0 `i ]
 [e $UE 766  ]
-"160
+"162
 }
-[e :U 775 ]
-"161
+[e :U 774 ]
+"163
 }
 "156
 [e ++ _i -> 1 `i ]
-[e $ < _i -> 12 `i 772  ]
-[e :U 773 ]
-"161
-}
-[; ;main.c: 160: }
-[; ;main.c: 161: }
-[; ;main.c: 162: totalVoltage = sumVoltages(voltages, 12);
-"162
-[e = _totalVoltage ( _sumVoltages (2 , _voltages -> 12 `i ]
-[; ;main.c: 163: soc = (int)(100.0*(50.4 / totalVoltage));
+[e $ < _i -> 5 `i 771  ]
+[e :U 772 ]
 "163
-[e = _soc -> * .100.0 / .50.4 -> _totalVoltage `d `i ]
-[; ;main.c: 164: return 1;
-"164
+}
+[; ;main.c: 162: }
+[; ;main.c: 163: }
+[; ;main.c: 165: *current = getCurrent();
+"165
+[e = *U _current ( _getCurrent ..  ]
+[; ;main.c: 166: if(*current < -2 || *current > 2){
+"166
+[e $ ! || < *U _current -> -U -> 2 `i `f > *U _current -> -> 2 `i `f 775  ]
+{
+[; ;main.c: 168: return 0;
+"168
+[e ) -> 0 `i ]
+[e $UE 766  ]
+"169
+}
+[e :U 775 ]
+[; ;main.c: 169: }
+[; ;main.c: 171: return 1;
+"171
 [e ) -> 1 `i ]
 [e $UE 766  ]
-[; ;main.c: 165: }
-"165
+[; ;main.c: 172: }
+"172
 [e :UE 766 ]
 }
-"167
+"174
 [v _running `(uc ~T0 @X0 1 ef ]
 {
-[; ;main.c: 167: char running(){
+[; ;main.c: 174: char running(){
 [e :U _running ]
 [f ]
-[; ;main.c: 168: return 1;
-"168
+[; ;main.c: 175: return 1;
+"175
 [e ) -> -> 1 `i `uc ]
 [e $UE 776  ]
-[; ;main.c: 169: }
-"169
+[; ;main.c: 176: }
+"176
 [e :UE 776 ]
 }
 [v $root$_ISR `(v ~T0 @X0 0 e ]
-[v F7732 `(v ~T0 @X0 1 tf ]
-"176
-[v _ISR `IF7732 ~T0 @X0 1 e ]
+[v F7741 `(v ~T0 @X0 1 tf ]
+"183
+[v _ISR `IF7741 ~T0 @X0 1 e ]
 {
-[; ;main.c: 176: void __interrupt ISR(void){
+[; ;main.c: 183: void __interrupt ISR(void){
 [e :U _ISR ]
 [f ]
-[; ;main.c: 178: if(INTCONbits.TMR0IF == 1 && INTCONbits.TMR0IE == 1){
-"178
+[; ;main.c: 185: if(INTCONbits.TMR0IF == 1 && INTCONbits.TMR0IE == 1){
+"185
 [e $ ! && == -> . . _INTCONbits 0 2 `i -> 1 `i == -> . . _INTCONbits 0 5 `i -> 1 `i 778  ]
 {
-[; ;main.c: 179: k ++;
-"179
+[; ;main.c: 186: k ++;
+"186
 [e ++ _k -> 1 `i ]
-[; ;main.c: 180: if(k >= 3){
-"180
+[; ;main.c: 187: if(k >= 3){
+"187
 [e $ ! >= _k -> 3 `i 779  ]
 {
-[; ;main.c: 181: currentBool = 1;
-"181
-[e = _currentBool -> 1 `i ]
-[; ;main.c: 182: k=0;
-"182
-[e = _k -> 0 `i ]
-[; ;main.c: 183: j++;
-"183
-[e ++ _j -> 1 `i ]
-"184
-}
-[e :U 779 ]
-[; ;main.c: 184: }
-[; ;main.c: 186: if(j>=10000){
-"186
-[e $ ! >= _j -> 10000 `i 780  ]
-{
-[; ;main.c: 187: uartBool = 1;
-"187
-[e = _uartBool -> 1 `i ]
-[; ;main.c: 188: j = 0;
+[; ;main.c: 188: currentBool = 1;
 "188
-[e = _j -> 0 `i ]
+[e = _currentBool -> 1 `i ]
+[; ;main.c: 189: k=0;
 "189
-}
-[e :U 780 ]
-[; ;main.c: 189: }
-[; ;main.c: 190: INTCONbits.TMR0IF = 0;
+[e = _k -> 0 `i ]
+[; ;main.c: 190: j++;
 "190
-[e = . . _INTCONbits 0 2 -> -> 0 `i `uc ]
+[e ++ _j -> 1 `i ]
 "191
 }
-[e :U 778 ]
+[e :U 779 ]
 [; ;main.c: 191: }
-[; ;main.c: 193: if(PIE1bits.TMR2IE == 1 && PIR1bits.TMR2IF == 1){
+[; ;main.c: 193: if(j>=10000){
 "193
-[e $ ! && == -> . . _PIE1bits 0 1 `i -> 1 `i == -> . . _PIR1bits 0 1 `i -> 1 `i 781  ]
+[e $ ! >= _j -> 10000 `i 780  ]
 {
-[; ;main.c: 194: currentBool = 1;
+[; ;main.c: 194: uartBool = 1;
 "194
-[e = _currentBool -> 1 `i ]
-[; ;main.c: 195: PIR1bits.TMR2IF = 0;
+[e = _uartBool -> 1 `i ]
+[; ;main.c: 195: j = 0;
 "195
-[e = . . _PIR1bits 0 1 -> -> 0 `i `uc ]
+[e = _j -> 0 `i ]
 "196
 }
-[e :U 781 ]
+[e :U 780 ]
 [; ;main.c: 196: }
-[; ;main.c: 198: if(PIR1bits.TXIF == 1 && PIE1bits.TXIE == 1){
+[; ;main.c: 197: INTCONbits.TMR0IF = 0;
+"197
+[e = . . _INTCONbits 0 2 -> -> 0 `i `uc ]
 "198
+}
+[e :U 778 ]
+[; ;main.c: 198: }
+[; ;main.c: 200: if(PIE1bits.TMR2IE == 1 && PIR1bits.TMR2IF == 1){
+"200
+[e $ ! && == -> . . _PIE1bits 0 1 `i -> 1 `i == -> . . _PIR1bits 0 1 `i -> 1 `i 781  ]
+{
+[; ;main.c: 201: currentBool = 1;
+"201
+[e = _currentBool -> 1 `i ]
+[; ;main.c: 202: PIR1bits.TMR2IF = 0;
+"202
+[e = . . _PIR1bits 0 1 -> -> 0 `i `uc ]
+"203
+}
+[e :U 781 ]
+[; ;main.c: 203: }
+[; ;main.c: 205: if(PIR1bits.TXIF == 1 && PIE1bits.TXIE == 1){
+"205
 [e $ ! && == -> . . _PIR1bits 0 4 `i -> 1 `i == -> . . _PIE1bits 0 4 `i -> 1 `i 782  ]
 {
-[; ;main.c: 199: if(str[z] != '\0'){
-"199
+[; ;main.c: 206: if(str[z] != '\0'){
+"206
 [e $ ! != -> *U + &U _str * -> -> _z `ui `ux -> -> # *U &U _str `ui `ux `ui -> 0 `ui 783  ]
 {
-[; ;main.c: 200: TXREG = str[z];
-"200
+[; ;main.c: 207: TXREG = str[z];
+"207
 [e = _TXREG *U + &U _str * -> -> _z `ui `ux -> -> # *U &U _str `ui `ux ]
-[; ;main.c: 201: z++;
-"201
+[; ;main.c: 208: z++;
+"208
 [e ++ _z -> 1 `i ]
-"202
+"209
 }
-[; ;main.c: 202: }else{
+[; ;main.c: 209: }else{
 [e $U 784  ]
 [e :U 783 ]
 {
-[; ;main.c: 203: z = 0;
-"203
+[; ;main.c: 210: z = 0;
+"210
 [e = _z -> 0 `i ]
-[; ;main.c: 204: uartDisable();
-"204
+[; ;main.c: 211: uartDisable();
+"211
 [e ( _uartDisable ..  ]
-"205
+"212
 }
 [e :U 784 ]
-"206
+"213
 }
 [e :U 782 ]
-[; ;main.c: 205: }
-[; ;main.c: 206: }
-[; ;main.c: 208: if(PIR1bits.SSP1IF == 1 && PIE1bits.SSP1IE == 1){
-"208
+[; ;main.c: 212: }
+[; ;main.c: 213: }
+[; ;main.c: 215: if(PIR1bits.SSP1IF == 1 && PIE1bits.SSP1IE == 1){
+"215
 [e $ ! && == -> . . _PIR1bits 0 3 `i -> 1 `i == -> . . _PIE1bits 0 3 `i -> 1 `i 785  ]
 {
-[; ;main.c: 209: PIR1bits.SSP1IF = 0;
-"209
+[; ;main.c: 216: PIR1bits.SSP1IF = 0;
+"216
 [e = . . _PIR1bits 0 3 -> -> 0 `i `uc ]
-"210
+"217
 }
 [e :U 785 ]
-[; ;main.c: 210: }
-[; ;main.c: 212: }
-"212
+[; ;main.c: 217: }
+[; ;main.c: 219: }
+"219
 [e :UE 777 ]
 }
-"218
+"225
 [v _setup `(v ~T0 @X0 1 ef ]
 {
-[; ;main.c: 218: void setup(void){
+[; ;main.c: 225: void setup(void){
 [e :U _setup ]
 [f ]
-[; ;main.c: 220: TRISDbits.TRISD4 = 0;
-"220
+[; ;main.c: 227: TRISDbits.TRISD4 = 0;
+"227
 [e = . . _TRISDbits 0 4 -> -> 0 `i `uc ]
-[; ;main.c: 221: TRISDbits.TRISD5 = 0;
-"221
+[; ;main.c: 228: TRISDbits.TRISD5 = 0;
+"228
 [e = . . _TRISDbits 0 5 -> -> 0 `i `uc ]
-[; ;main.c: 222: TRISAbits.TRISA0 = 1;
-"222
-[e = . . _TRISAbits 0 0 -> -> 1 `i `uc ]
-[; ;main.c: 225: INTCONbits.GIE = 1;
-"225
-[e = . . _INTCONbits 0 7 -> -> 1 `i `uc ]
-[; ;main.c: 226: INTCONbits.PEIE = 1;
-"226
-[e = . . _INTCONbits 0 6 -> -> 1 `i `uc ]
-[; ;main.c: 229: timerSetup();
+[; ;main.c: 229: TRISAbits.TRISA0 = 1;
 "229
-[e ( _timerSetup ..  ]
-[; ;main.c: 232: TRISAbits.TRISA5 = 0;
+[e = . . _TRISAbits 0 0 -> -> 1 `i `uc ]
+[; ;main.c: 232: INTCONbits.GIE = 1;
 "232
-[e = . . _TRISAbits 0 5 -> -> 0 `i `uc ]
-[; ;main.c: 233: LATAbits.LATA5 = 1;
+[e = . . _INTCONbits 0 7 -> -> 1 `i `uc ]
+[; ;main.c: 233: INTCONbits.PEIE = 1;
 "233
-[e = . . _LATAbits 0 5 -> -> 1 `i `uc ]
-[; ;main.c: 236: TRISAbits.TRISA4 = 0;
+[e = . . _INTCONbits 0 6 -> -> 1 `i `uc ]
+[; ;main.c: 236: timerSetup();
 "236
-[e = . . _TRISAbits 0 4 -> -> 0 `i `uc ]
-[; ;main.c: 239: adcSetup();
+[e ( _timerSetup ..  ]
+[; ;main.c: 239: TRISAbits.TRISA5 = 0;
 "239
-[e ( _adcSetup ..  ]
-[; ;main.c: 242: uartSetup();
-"242
-[e ( _uartSetup ..  ]
-[; ;main.c: 245: TRISBbits.TRISB6 = 1;
-"245
-[e = . . _TRISBbits 0 6 -> -> 1 `i `uc ]
-[; ;main.c: 246: TRISBbits.TRISB7 = 1;
+[e = . . _TRISAbits 0 5 -> -> 0 `i `uc ]
+[; ;main.c: 240: LATAbits.LATA5 = 1;
+"240
+[e = . . _LATAbits 0 5 -> -> 1 `i `uc ]
+[; ;main.c: 243: TRISAbits.TRISA4 = 0;
+"243
+[e = . . _TRISAbits 0 4 -> -> 0 `i `uc ]
+[; ;main.c: 246: adcSetup();
 "246
-[e = . . _TRISBbits 0 7 -> -> 1 `i `uc ]
-[; ;main.c: 247: i2cSetup();
-"247
-[e ( _i2cSetup ..  ]
-[; ;main.c: 250: TRISCbits.TRISC5 = 0;
-"250
-[e = . . _TRISCbits 0 5 -> -> 0 `i `uc ]
-[; ;main.c: 251: TRISCbits.TRISC4 = 1;
-"251
-[e = . . _TRISCbits 0 4 -> -> 1 `i `uc ]
-[; ;main.c: 252: TRISCbits.TRISC3 = 0;
+[e ( _adcSetup ..  ]
+[; ;main.c: 249: uartSetup();
+"249
+[e ( _uartSetup ..  ]
+[; ;main.c: 252: TRISBbits.TRISB6 = 1;
 "252
-[e = . . _TRISCbits 0 3 -> -> 0 `i `uc ]
-[; ;main.c: 253: TRISDbits.TRISD3 = 0;
+[e = . . _TRISBbits 0 6 -> -> 1 `i `uc ]
+[; ;main.c: 253: TRISBbits.TRISB7 = 1;
 "253
-[e = . . _TRISDbits 0 3 -> -> 0 `i `uc ]
-[; ;main.c: 254: spiSetup();
+[e = . . _TRISBbits 0 7 -> -> 1 `i `uc ]
+[; ;main.c: 254: i2cSetup();
 "254
-[e ( _spiSetup ..  ]
-[; ;main.c: 257: LTC6804_initialize();
+[e ( _i2cSetup ..  ]
+[; ;main.c: 257: TRISCbits.TRISC5 = 0;
 "257
-[e ( _LTC6804_initialize ..  ]
-[; ;main.c: 258: }
+[e = . . _TRISCbits 0 5 -> -> 0 `i `uc ]
+[; ;main.c: 258: TRISCbits.TRISC4 = 1;
 "258
+[e = . . _TRISCbits 0 4 -> -> 1 `i `uc ]
+[; ;main.c: 259: TRISCbits.TRISC3 = 0;
+"259
+[e = . . _TRISCbits 0 3 -> -> 0 `i `uc ]
+[; ;main.c: 260: TRISDbits.TRISD3 = 0;
+"260
+[e = . . _TRISDbits 0 3 -> -> 0 `i `uc ]
+[; ;main.c: 261: spiSetup();
+"261
+[e ( _spiSetup ..  ]
+[; ;main.c: 264: LTC6804_initialize();
+"264
+[e ( _LTC6804_initialize ..  ]
+[; ;main.c: 265: }
+"265
 [e :UE 786 ]
 }
