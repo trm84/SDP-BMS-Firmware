@@ -333,6 +333,8 @@ int prec;
 # 508
 unsigned short flag;
 
+int ccnt = 0;
+
 # 515
 char d;
 double fval;
@@ -357,7 +359,7 @@ while(c = *f++) {
 if(c != '%')
 
 {
-((*sp++ = (c)));
+((*sp++ = (c)),(++ccnt));
 continue;
 }
 
@@ -510,11 +512,11 @@ if(flag & 0x04) {
 
 if(flag & 0x03)
 
-((*sp++ = ('-')));
+((*sp++ = ('-')),(++ccnt));
 
 # 1168
 while(width > 0) {
-((*sp++ = ('0')));
+((*sp++ = ('0')),(++ccnt));
 width--;
 }
 
@@ -524,7 +526,7 @@ width--;
 
 # 1180
 while(width > 0) {
-((*sp++ = (' ')));
+((*sp++ = (' ')),(++ccnt));
 width--;
 }
 
@@ -533,7 +535,7 @@ width--;
 
 if(flag & 0x03)
 
-((*sp++ = ('-')));
+((*sp++ = ('-')),(++ccnt));
 
 # 1195
 }
@@ -544,12 +546,12 @@ while(c--) {
 {
 tmpval.vd = val/dpowers[c];
 tmpval.vd %= 10;
-((*sp++ = ('0' + tmpval.vd)));
+((*sp++ = ('0' + tmpval.vd)),(++ccnt));
 }
 
 }
 while(exp > 0) {
-((*sp++ = ('0')));
+((*sp++ = ('0')),(++ccnt));
 exp--;
 }
 if(prec > (int)((sizeof dpowers/sizeof dpowers[0])-2))
@@ -562,19 +564,19 @@ prec -= c;
 
 if(c)
 
-((*sp++ = ('.')));
+((*sp++ = ('.')),(++ccnt));
 
 # 1227
 val = (long)(fval * scale(c));
 while(c--) {
 tmpval.vd = val/dpowers[c];
 tmpval.vd %= 10;
-((*sp++ = ('0' + tmpval.vd)));
+((*sp++ = ('0' + tmpval.vd)),(++ccnt));
 val %= dpowers[c];
 }
 
 while(prec) {
-((*sp++ = ('0')));
+((*sp++ = ('0')),(++ccnt));
 prec--;
 }
 
@@ -634,12 +636,12 @@ if(flag & 0x04) {
 
 
 if(flag & 0x03)
-((*sp++ = ('-')));
+((*sp++ = ('-')),(++ccnt));
 
 # 1415
 if(width)
 do
-((*sp++ = ('0')));
+((*sp++ = ('0')),(++ccnt));
 while(--width);
 
 } else
@@ -651,12 +653,12 @@ if(width
 # 1428
 )
 do
-((*sp++ = (' ')));
+((*sp++ = (' ')),(++ccnt));
 while(--width);
 
 # 1438
 if(flag & 0x03)
-((*sp++ = ('-')));
+((*sp++ = ('-')),(++ccnt));
 
 # 1469
 }
@@ -672,7 +674,7 @@ c = (val / dpowers[prec]) % 10 + '0';
 
 # 1523
 }
-((*sp++ = (c)));
+((*sp++ = (c)),(++ccnt));
 }
 
 # 1533
@@ -683,6 +685,6 @@ alldone:
 
 *sp = 0;
 
-return 0;
+return ccnt;
 }
 

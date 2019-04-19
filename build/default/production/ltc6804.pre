@@ -9590,8 +9590,8 @@ void spiSwitch();
 # 10 "ltc6804.h"
 void measureVoltages(float voltages[], float *totalVoltage, int numVoltages);
 float sumVoltages(float voltages[], int numVoltages);
-void setDischarge(int index, char boolean);
-void cellBalancing(float voltages[], int numVoltages);
+void setDischarge(int index, char boolean, int balanceEn[]);
+void cellBalancing(float voltages[], int numVoltages, int balanceEn[]);
 void LTC6804_rdstat_reg(char reg, char total_ic, char *data);
 void LTC6804_adstat();
 
@@ -9655,7 +9655,7 @@ void spi_write_array(char length, char *data);
 
 void spi_write_read(char *TxData, char TXlen, char *rx_data, char RXlen);
 
-# 70 "ltc6804.c"
+# 63 "ltc6804.c"
 char ADCV[2];
 char ADAX[2];
 char ADSTAT[2];
@@ -9664,7 +9664,7 @@ char configReg[1][6] = {0x00, 0x90, 0x1F, 0xC4, 0x00, 0x90};
 
 float sumVoltages(float voltages[], int numVoltages){
 
-# 84
+# 77
 float totalVoltage = 0;
 
 for(int i = 0; i < numVoltages; i++){
@@ -9695,13 +9695,9 @@ if(voltages[i] < 0.1){
 voltages[i] = 0.0;
 }
 }
-
-if(errorCount <= 10){
-cellBalancing(voltages, numVoltages);
-}
 }
 
-void cellBalancing(float voltages[], int numVoltages){
+void cellBalancing(float voltages[], int numVoltages, int balanceEn[]){
 float minVoltage = voltages[0];
 
 for(int i = 0; i < numVoltages; i++){
@@ -9712,95 +9708,119 @@ minVoltage = voltages[i];
 char boolean;
 for(int i = 0; i < numVoltages; i++){
 boolean = (voltages[i] >= (minVoltage + 0.05));
-setDischarge(i, boolean);
+setDischarge(i, boolean, balanceEn);
 }
 LTC6804_wrcfg(1, configReg);
 }
 
-void setDischarge(int index, char boolean){
+void setDischarge(int index, char boolean, int balanceEn[]){
 switch(index){
 case 0:
 if(boolean){
 configReg[0][4]= configReg[0][4] | 0x01;
+balanceEn[index] = 1;
 }else{
 configReg[0][4]= configReg[0][4] & (~0x01);
+balanceEn[index] = 0;
 }
 break;
 case 1:
 if(boolean){
 configReg[0][4]= configReg[0][4] | 0x02;
+balanceEn[index] = 1;
 }else{
 configReg[0][4]= configReg[0][4] & (~0x02);
+balanceEn[index] = 0;
 }
 break;
 case 2:
 if(boolean){
 configReg[0][4]= configReg[0][4] | 0x04;
+balanceEn[index] = 1;
 }else{
 configReg[0][4]= configReg[0][4] & (~0x04);
+balanceEn[index] = 0;
 }
 break;
 case 3:
 if(boolean){
 configReg[0][4]= configReg[0][4] | 0x08;
+balanceEn[index] = 1;
 }else{
 configReg[0][4]= configReg[0][4] & (~0x08);
+balanceEn[index] = 0;
 }
 break;
 case 4:
 if(boolean){
 configReg[0][4]= configReg[0][4] | 0x10;
+balanceEn[index] = 1;
 }else{
 configReg[0][4]= configReg[0][4] & (~0x10);
+balanceEn[index] = 0;
 }
 break;
 case 5:
 if(boolean){
 configReg[0][4]= configReg[0][4] | 0x20;
+balanceEn[index] = 1;
 }else{
 configReg[0][4]= configReg[0][4] & (~0x20);
+balanceEn[index] = 0;
 }
 break;
 case 6:
 if(boolean){
 configReg[0][4]= configReg[0][4] | 0x40;
+balanceEn[index] = 1;
 }else{
 configReg[0][4]= configReg[0][4] & (~0x40);
+balanceEn[index] = 0;
 }
 break;
 case 7:
 if(boolean){
 configReg[0][4]= configReg[0][4] | 0x80;
+balanceEn[index] = 1;
 }else{
 configReg[0][4]= configReg[0][4] & (~0x80);
+balanceEn[index] = 0;
 }
 break;
 case 8:
 if(boolean){
 configReg[0][5]= configReg[0][5] | 0x01;
+balanceEn[index] = 1;
 }else{
 configReg[0][5]= configReg[0][5] & (~0x01);
+balanceEn[index] = 0;
 }
 break;
 case 9:
 if(boolean){
 configReg[0][5]= configReg[0][5] | 0x02;
+balanceEn[index] = 1;
 }else{
 configReg[0][5]= configReg[0][5] & (~0x02);
+balanceEn[index] = 0;
 }
 break;
 case 10:
 if(boolean){
 configReg[0][5]= configReg[0][5] | 0x04;
+balanceEn[index] = 1;
 }else{
 configReg[0][5]= configReg[0][5] & (~0x04);
+balanceEn[index] = 0;
 }
 break;
 case 11:
 if(boolean){
 configReg[0][5]= configReg[0][5] | 0x08;
+balanceEn[index] = 1;
 }else{
 configReg[0][5]= configReg[0][5] & (~0x08);
+balanceEn[index] = 0;
 }
 break;
 default:
@@ -9873,7 +9893,7 @@ LATDbits.LATD3 = 1;
 
 }
 
-# 302
+# 314
 void LTC6804_initialize()
 {
 set_adc(2,1,0,0);
@@ -9881,7 +9901,7 @@ LTC6804_wrcfg(1, configReg);
 
 }
 
-# 325
+# 336
 void set_adc(char MD,
 char DCP,
 char CH,
@@ -9907,7 +9927,7 @@ ADSTAT[1] = md_bits + 0x69;
 
 }
 
-# 369
+# 380
 void LTC6804_adcv()
 {
 
@@ -9933,7 +9953,7 @@ LATDbits.LATD3 = 1;
 
 }
 
-# 421
+# 431
 void LTC6804_adax()
 {
 char cmd[4];
@@ -9952,7 +9972,7 @@ LATDbits.LATD3 = 1;
 
 }
 
-# 483
+# 492
 char LTC6804_rdcv(char reg,
 char total_ic,
 unsigned int cell_codes[][12]
@@ -10044,7 +10064,7 @@ data_counter= data_counter + 2;
 return(pec_error);
 }
 
-# 621
+# 627
 void LTC6804_rdcv_reg(char reg,
 char total_ic,
 char *data
@@ -10091,7 +10111,7 @@ LATDbits.LATD3 = 1;
 
 }
 
-# 706
+# 710
 char LTC6804_rdaux(char reg,
 char total_ic,
 int aux_codes[][6]
@@ -10186,7 +10206,7 @@ data_counter=data_counter+2;
 return (pec_error);
 }
 
-# 844
+# 845
 void LTC6804_rdaux_reg(char reg,
 char total_ic,
 char *data
@@ -10250,7 +10270,7 @@ spi_write_read(cmd,4,0,0);
 LATDbits.LATD3 = 1;
 }
 
-# 952
+# 951
 void LTC6804_clraux()
 {
 char cmd[4];
@@ -10273,7 +10293,7 @@ spi_write_read(cmd,4,0,0);
 LATDbits.LATD3 = 1;
 }
 
-# 1011
+# 1010
 void LTC6804_wrcfg(char total_ic,
 char config[][6]
 )
@@ -10320,7 +10340,7 @@ LATDbits.LATD3 = 1;
 
 }
 
-# 1095
+# 1087
 char LTC6804_rdcfg(char total_ic,
 char r_config[][8]
 )
@@ -10372,7 +10392,7 @@ pec_error = -1;
 return(pec_error);
 }
 
-# 1162
+# 1153
 void wakeup_idle()
 {
 LATDbits.LATD3 = 0;
@@ -10380,7 +10400,7 @@ _delay((unsigned long)((2)*(32000000/4000000.0)));
 LATDbits.LATD3 = 1;
 }
 
-# 1174
+# 1165
 void wakeup_sleep()
 {
 LATDbits.LATD3 = 0;
@@ -10388,7 +10408,7 @@ _delay((unsigned long)((1)*(32000000/4000.0)));
 LATDbits.LATD3 = 1;
 }
 
-# 1190
+# 1180
 int pec15_calc(char len,
 char *data
 )
@@ -10404,7 +10424,7 @@ remainder = (remainder<<8)^crc15Table[addr];
 return(remainder*2);
 }
 
-# 1213
+# 1203
 void spi_write_array(char len,
 char data[]
 )
@@ -10415,7 +10435,7 @@ spi_write((char)data[i]);
 }
 }
 
-# 1233
+# 1221
 void spi_write_read(char tx_Data[],
 char tx_len,
 char *rx_data,

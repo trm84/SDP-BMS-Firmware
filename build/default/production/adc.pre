@@ -9480,8 +9480,6 @@ const char temperatures[] = {148, 118, 103, 92, 84, 78, 72, 67, 63, 60,
 int calculateTemp(int adcValue){
 float voltage = (((float)adcValue/4096.0)*5.0);
 return temperatures[(int)(voltage*10)];
-
-
 }
 
 float calculateCurrent(float adcValue){
@@ -9497,16 +9495,16 @@ return currentValue;
 }
 
 
-int getTemps(int temperatures[], int numTemps){
+int getTemps(int temps[], int numTemps){
 int highestTemp = 0;
 
 LATBbits.LATB5 = 0;
 highestTemp = calculateTemp(adcRead(tempChannels[0]));
-temperatures[0] = highestTemp;
-for(int inc = 1; inc < numTemps; inc ++){
-temperatures[inc] = calculateTemp(adcRead(tempChannels[inc]));
-if(temperatures[inc] > highestTemp){
-highestTemp = temperatures[inc];
+temps[0] = highestTemp;
+for(int inc = 0; inc < numTemps; inc ++){
+temps[inc] = calculateTemp(adcRead(tempChannels[inc]));
+if(temps[inc] > highestTemp){
+highestTemp = temps[inc];
 }
 }
 

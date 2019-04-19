@@ -7042,271 +7042,271 @@ Version 3.2 HI-TECH Software Intermediate Code
 "14
 [e ) -> *U + &U _temperatures * -> -> -> * _voltage -> -> 10 `i `f `i `ui `ux -> -> # *U &U _temperatures `ui `ux `i ]
 [e $UE 752  ]
-[; ;adc.c: 17: }
-"17
+[; ;adc.c: 15: }
+"15
 [e :UE 752 ]
 }
-"19
+"17
 [v _calculateCurrent `(f ~T0 @X0 1 ef1`f ]
 {
-[; ;adc.c: 19: float calculateCurrent(float adcValue){
+[; ;adc.c: 17: float calculateCurrent(float adcValue){
 [e :U _calculateCurrent ]
 [v _adcValue `f ~T0 @X0 1 r1 ]
 [f ]
-"20
+"18
 [v _curr `f ~T0 @X0 1 a ]
-[; ;adc.c: 20: float curr = (((((float)adcValue)/4095.0)*5.0) - 2.5)/0.0394;
+[; ;adc.c: 18: float curr = (((((float)adcValue)/4095.0)*5.0) - 2.5)/0.0394;
 [e = _curr -> / - * / -> _adcValue `d .4095.0 .5.0 .2.5 .0.0394 `f ]
-[; ;adc.c: 21: return curr;
-"21
+[; ;adc.c: 19: return curr;
+"19
 [e ) _curr ]
 [e $UE 753  ]
-[; ;adc.c: 22: }
-"22
+[; ;adc.c: 20: }
+"20
 [e :UE 753 ]
 }
-"24
+"22
 [v _getCurrent `(f ~T0 @X0 1 ef ]
 {
-[; ;adc.c: 24: float getCurrent(){
+[; ;adc.c: 22: float getCurrent(){
 [e :U _getCurrent ]
 [f ]
-"25
+"23
 [v _currentValue `f ~T0 @X0 1 a ]
-[; ;adc.c: 25: float currentValue = (float)adcRead((char)10101);
+[; ;adc.c: 23: float currentValue = (float)adcRead((char)10101);
 [e = _currentValue -> ( _adcRead (1 -> -> 10101 `i `uc `f ]
-[; ;adc.c: 26: currentValue = calculateCurrent(currentValue);
-"26
+[; ;adc.c: 24: currentValue = calculateCurrent(currentValue);
+"24
 [e = _currentValue ( _calculateCurrent (1 _currentValue ]
-[; ;adc.c: 28: return currentValue;
-"28
+[; ;adc.c: 26: return currentValue;
+"26
 [e ) _currentValue ]
 [e $UE 754  ]
-[; ;adc.c: 29: }
-"29
+[; ;adc.c: 27: }
+"27
 [e :UE 754 ]
 }
-"32
+"30
 [v _getTemps `(i ~T0 @X0 1 ef2`*i`i ]
 {
-[; ;adc.c: 32: int getTemps(int temperatures[], int numTemps){
+[; ;adc.c: 30: int getTemps(int temps[], int numTemps){
 [e :U _getTemps ]
-[v _temperatures `*i ~T0 @X0 1 r1 ]
+[v _temps `*i ~T0 @X0 1 r1 ]
 [v _numTemps `i ~T0 @X0 1 r2 ]
 [f ]
-"33
+"31
 [v _highestTemp `i ~T0 @X0 1 a ]
-[; ;adc.c: 33: int highestTemp = 0;
+[; ;adc.c: 31: int highestTemp = 0;
 [e = _highestTemp -> 0 `i ]
-[; ;adc.c: 35: LATBbits.LATB5 = 0;
-"35
+[; ;adc.c: 33: LATBbits.LATB5 = 0;
+"33
 [e = . . _LATBbits 0 5 -> -> 0 `i `uc ]
-[; ;adc.c: 36: highestTemp = calculateTemp(adcRead(tempChannels[0]));
-"36
+[; ;adc.c: 34: highestTemp = calculateTemp(adcRead(tempChannels[0]));
+"34
 [e = _highestTemp ( _calculateTemp (1 ( _adcRead (1 *U + &U _tempChannels * -> -> -> 0 `i `ui `ux -> -> # *U &U _tempChannels `ui `ux ]
-[; ;adc.c: 37: temperatures[0] = highestTemp;
-"37
-[e = *U + _temperatures * -> -> 0 `i `x -> -> # *U _temperatures `i `x _highestTemp ]
-[; ;adc.c: 38: for(int inc = 1; inc < numTemps; inc ++){
-"38
+[; ;adc.c: 35: temps[0] = highestTemp;
+"35
+[e = *U + _temps * -> -> 0 `i `x -> -> # *U _temps `i `x _highestTemp ]
+[; ;adc.c: 36: for(int inc = 0; inc < numTemps; inc ++){
+"36
 {
 [v _inc `i ~T0 @X0 1 a ]
-[e = _inc -> 1 `i ]
+[e = _inc -> 0 `i ]
 [e $U 759  ]
 [e :U 756 ]
 {
-[; ;adc.c: 39: temperatures[inc] = calculateTemp(adcRead(tempChannels[inc]));
-"39
-[e = *U + _temperatures * -> _inc `x -> -> # *U _temperatures `i `x ( _calculateTemp (1 ( _adcRead (1 *U + &U _tempChannels * -> -> _inc `ui `ux -> -> # *U &U _tempChannels `ui `ux ]
-[; ;adc.c: 40: if(temperatures[inc] > highestTemp){
-"40
-[e $ ! > *U + _temperatures * -> _inc `x -> -> # *U _temperatures `i `x _highestTemp 760  ]
+[; ;adc.c: 37: temps[inc] = calculateTemp(adcRead(tempChannels[inc]));
+"37
+[e = *U + _temps * -> _inc `x -> -> # *U _temps `i `x ( _calculateTemp (1 ( _adcRead (1 *U + &U _tempChannels * -> -> _inc `ui `ux -> -> # *U &U _tempChannels `ui `ux ]
+[; ;adc.c: 38: if(temps[inc] > highestTemp){
+"38
+[e $ ! > *U + _temps * -> _inc `x -> -> # *U _temps `i `x _highestTemp 760  ]
 {
-[; ;adc.c: 41: highestTemp = temperatures[inc];
-"41
-[e = _highestTemp *U + _temperatures * -> _inc `x -> -> # *U _temperatures `i `x ]
-"42
+[; ;adc.c: 39: highestTemp = temps[inc];
+"39
+[e = _highestTemp *U + _temps * -> _inc `x -> -> # *U _temps `i `x ]
+"40
 }
 [e :U 760 ]
-"43
+"41
 }
-"38
+"36
 [e ++ _inc -> 1 `i ]
 [e :U 759 ]
 [e $ < _inc _numTemps 756  ]
 [e :U 757 ]
-"43
+"41
 }
-[; ;adc.c: 42: }
-[; ;adc.c: 43: }
-[; ;adc.c: 45: LATBbits.LATB5 = 1;
-"45
+[; ;adc.c: 40: }
+[; ;adc.c: 41: }
+[; ;adc.c: 43: LATBbits.LATB5 = 1;
+"43
 [e = . . _LATBbits 0 5 -> -> 1 `i `uc ]
-[; ;adc.c: 46: return highestTemp;
-"46
+[; ;adc.c: 44: return highestTemp;
+"44
 [e ) _highestTemp ]
 [e $UE 755  ]
-[; ;adc.c: 47: }
-"47
+[; ;adc.c: 45: }
+"45
 [e :UE 755 ]
 }
-"50
+"48
 [v _adcRead `(i ~T0 @X0 1 ef1`uc ]
 {
-[; ;adc.c: 50: int adcRead(char ch){
+[; ;adc.c: 48: int adcRead(char ch){
 [e :U _adcRead ]
 [v _ch `uc ~T0 @X0 1 r1 ]
 [f ]
-[; ;adc.c: 51: ADCON0bits.CHS = ch;
-"51
+[; ;adc.c: 49: ADCON0bits.CHS = ch;
+"49
 [e = . . _ADCON0bits 1 2 _ch ]
-[; ;adc.c: 52: ADCON0bits.ADON = 1;
-"52
+[; ;adc.c: 50: ADCON0bits.ADON = 1;
+"50
 [e = . . _ADCON0bits 0 0 -> -> 1 `i `uc ]
-[; ;adc.c: 54: _delay((unsigned long)((100)*(32000000/4000000.0)));
-"54
+[; ;adc.c: 52: _delay((unsigned long)((100)*(32000000/4000000.0)));
+"52
 [e ( __delay (1 -> * -> -> 100 `i `d / -> -> 32000000 `l `d .4000000.0 `ul ]
-[; ;adc.c: 55: ADCON0bits.GO = 1;
-"55
+[; ;adc.c: 53: ADCON0bits.GO = 1;
+"53
 [e = . . _ADCON0bits 2 1 -> -> 1 `i `uc ]
-[; ;adc.c: 57: while(ADCON0bits.DONE == 1);
-"57
+[; ;adc.c: 55: while(ADCON0bits.DONE == 1);
+"55
 [e $U 762  ]
 [e :U 763 ]
 [e :U 762 ]
 [e $ == -> . . _ADCON0bits 3 1 `i -> 1 `i 763  ]
 [e :U 764 ]
-"59
+"57
 [v _ansHigh `i ~T0 @X0 1 a ]
-[; ;adc.c: 59: int ansHigh = ADRESH;
+[; ;adc.c: 57: int ansHigh = ADRESH;
 [e = _ansHigh -> _ADRESH `i ]
-"60
+"58
 [v _ansLow `i ~T0 @X0 1 a ]
-[; ;adc.c: 60: int ansLow = ADRESL;
+[; ;adc.c: 58: int ansLow = ADRESL;
 [e = _ansLow -> _ADRESL `i ]
-"62
+"60
 [v _total `i ~T0 @X0 1 a ]
-[; ;adc.c: 62: int total = ((ansHigh << 4) | (ansLow >> 4) & 0x0FFF);
+[; ;adc.c: 60: int total = ((ansHigh << 4) | (ansLow >> 4) & 0x0FFF);
 [e = _total | << _ansHigh -> 4 `i & >> _ansLow -> 4 `i -> 4095 `i ]
-[; ;adc.c: 63: ADCON0bits.ADON = 0;
-"63
+[; ;adc.c: 61: ADCON0bits.ADON = 0;
+"61
 [e = . . _ADCON0bits 0 0 -> -> 0 `i `uc ]
-[; ;adc.c: 64: return total;
-"64
+[; ;adc.c: 62: return total;
+"62
 [e ) _total ]
 [e $UE 761  ]
-[; ;adc.c: 65: }
-"65
+[; ;adc.c: 63: }
+"63
 [e :UE 761 ]
 }
-"68
+"66
 [v _avgBuff `(f ~T0 @X0 1 ef2`*f`i ]
 {
-[; ;adc.c: 68: float avgBuff(float buff[], int size){
+[; ;adc.c: 66: float avgBuff(float buff[], int size){
 [e :U _avgBuff ]
 [v _buff `*f ~T0 @X0 1 r1 ]
 [v _size `i ~T0 @X0 1 r2 ]
 [f ]
-"69
+"67
 [v _inc `i ~T0 @X0 1 a ]
-[; ;adc.c: 69: int inc = 0;
+[; ;adc.c: 67: int inc = 0;
 [e = _inc -> 0 `i ]
-"70
+"68
 [v _total `f ~T0 @X0 1 a ]
-[; ;adc.c: 70: float total = 0;
+[; ;adc.c: 68: float total = 0;
 [e = _total -> -> 0 `i `f ]
-[; ;adc.c: 71: for(inc = 0; inc < size; inc++){
-"71
+[; ;adc.c: 69: for(inc = 0; inc < size; inc++){
+"69
 {
 [e = _inc -> 0 `i ]
 [e $U 769  ]
 [e :U 766 ]
 {
-[; ;adc.c: 72: total += buff[inc];
-"72
+[; ;adc.c: 70: total += buff[inc];
+"70
 [e =+ _total *U + _buff * -> _inc `x -> -> # *U _buff `i `x ]
-"73
-}
 "71
+}
+"69
 [e ++ _inc -> 1 `i ]
 [e :U 769 ]
 [e $ < _inc _size 766  ]
 [e :U 767 ]
-"73
+"71
 }
-[; ;adc.c: 73: }
-[; ;adc.c: 75: return ((float) total)/((float) size);
-"75
+[; ;adc.c: 71: }
+[; ;adc.c: 73: return ((float) total)/((float) size);
+"73
 [e ) / _total -> _size `f ]
 [e $UE 765  ]
-[; ;adc.c: 76: }
-"76
+[; ;adc.c: 74: }
+"74
 [e :UE 765 ]
 }
-"78
+"76
 [v _adcSetup `(v ~T0 @X0 1 ef ]
 {
-[; ;adc.c: 78: void adcSetup(){
+[; ;adc.c: 76: void adcSetup(){
 [e :U _adcSetup ]
 [f ]
-[; ;adc.c: 80: TRISBbits.TRISB5 = 0;
-"80
+[; ;adc.c: 78: TRISBbits.TRISB5 = 0;
+"78
 [e = . . _TRISBbits 0 5 -> -> 0 `i `uc ]
-[; ;adc.c: 83: TRISAbits.TRISA0 = 1;
-"83
+[; ;adc.c: 81: TRISAbits.TRISA0 = 1;
+"81
 [e = . . _TRISAbits 0 0 -> -> 1 `i `uc ]
-[; ;adc.c: 84: TRISAbits.TRISA1 = 1;
-"84
+[; ;adc.c: 82: TRISAbits.TRISA1 = 1;
+"82
 [e = . . _TRISAbits 0 1 -> -> 1 `i `uc ]
-[; ;adc.c: 85: TRISAbits.TRISA2 = 1;
-"85
+[; ;adc.c: 83: TRISAbits.TRISA2 = 1;
+"83
 [e = . . _TRISAbits 0 2 -> -> 1 `i `uc ]
-[; ;adc.c: 86: TRISAbits.TRISA3 = 1;
-"86
+[; ;adc.c: 84: TRISAbits.TRISA3 = 1;
+"84
 [e = . . _TRISAbits 0 3 -> -> 1 `i `uc ]
-[; ;adc.c: 89: TRISBbits.TRISB0 = 1;
-"89
+[; ;adc.c: 87: TRISBbits.TRISB0 = 1;
+"87
 [e = . . _TRISBbits 0 0 -> -> 1 `i `uc ]
-[; ;adc.c: 90: TRISBbits.TRISB1 = 1;
-"90
+[; ;adc.c: 88: TRISBbits.TRISB1 = 1;
+"88
 [e = . . _TRISBbits 0 1 -> -> 1 `i `uc ]
-[; ;adc.c: 91: TRISBbits.TRISB2 = 1;
-"91
+[; ;adc.c: 89: TRISBbits.TRISB2 = 1;
+"89
 [e = . . _TRISBbits 0 2 -> -> 1 `i `uc ]
-[; ;adc.c: 92: TRISBbits.TRISB3 = 1;
-"92
+[; ;adc.c: 90: TRISBbits.TRISB3 = 1;
+"90
 [e = . . _TRISBbits 0 3 -> -> 1 `i `uc ]
-[; ;adc.c: 93: TRISBbits.TRISB4 = 1;
-"93
+[; ;adc.c: 91: TRISBbits.TRISB4 = 1;
+"91
 [e = . . _TRISBbits 0 4 -> -> 1 `i `uc ]
-[; ;adc.c: 96: TRISDbits.TRISD1 = 1;
-"96
+[; ;adc.c: 94: TRISDbits.TRISD1 = 1;
+"94
 [e = . . _TRISDbits 0 1 -> -> 1 `i `uc ]
-[; ;adc.c: 99: ANSELA = 0x0F;
-"99
+[; ;adc.c: 97: ANSELA = 0x0F;
+"97
 [e = _ANSELA -> -> 15 `i `uc ]
-[; ;adc.c: 100: ANSELB = 0x1F;
-"100
+[; ;adc.c: 98: ANSELB = 0x1F;
+"98
 [e = _ANSELB -> -> 31 `i `uc ]
-[; ;adc.c: 101: ANSELD = 0x01;
-"101
+[; ;adc.c: 99: ANSELD = 0x01;
+"99
 [e = _ANSELD -> -> 1 `i `uc ]
-[; ;adc.c: 102: TRISDbits.TRISD1 = 1;
-"102
+[; ;adc.c: 100: TRISDbits.TRISD1 = 1;
+"100
 [e = . . _TRISDbits 0 1 -> -> 1 `i `uc ]
-[; ;adc.c: 103: WPUD = 0x00;
-"103
+[; ;adc.c: 101: WPUD = 0x00;
+"101
 [e = _WPUD -> -> 0 `i `uc ]
-[; ;adc.c: 106: ADCON0 = 0x00;
-"106
+[; ;adc.c: 104: ADCON0 = 0x00;
+"104
 [e = _ADCON0 -> -> 0 `i `uc ]
-[; ;adc.c: 107: ADCON1 = 0x60;
-"107
+[; ;adc.c: 105: ADCON1 = 0x60;
+"105
 [e = _ADCON1 -> -> 96 `i `uc ]
-[; ;adc.c: 108: ADCON2 = 0x0F;
-"108
+[; ;adc.c: 106: ADCON2 = 0x0F;
+"106
 [e = _ADCON2 -> -> 15 `i `uc ]
-[; ;adc.c: 109: }
-"109
+[; ;adc.c: 107: }
+"107
 [e :UE 770 ]
 }

@@ -23,5 +23,3 @@ void timer0Setup(){
     OPTION_REG = 0b10001110; //1110 = 1:128
     INTCONbits.TMR0IE = 1; //TIMER0 INTERRUPT EN
 }
-
-

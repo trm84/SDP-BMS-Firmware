@@ -8,61 +8,60 @@
 
 #include "uart.h"
 
-void writeValuesToUart(float voltageArr[], int voltageArrLength, float totalVoltage, int temperatureArr[], int temperatureArrLength, int temperatureHigh, float current, float soc, int uartLines){
+void writeValuesToUart(float voltageArr[], int voltageArrLength, float totalVoltage, int balanceEn[], int temperatureArr[], int temperatureArrLength, int temperatureHigh, float current, float soc, int uartLines){
+    int index = 0;
+    
+    while(PIE1bits.TXIE); //can't start until tx buffer is empty
     clearScreen(uartLines);
-    writeVoltages(voltageArr, voltageArrLength, totalVoltage);
-    writeTemps(temperatureArr, temperatureHigh , temperatureArrLength);
-    writeCurrent(current);
-    writeSOC(soc);
-}
-
-void writeSOC(float soc){
-    sprintf(&str[0], "SOC = %0.4f percent \n\r", (soc*100));
+    
+    writeVoltages(voltageArr, voltageArrLength, totalVoltage, balanceEn, &index);
+    writeTemps(temperatureArr, temperatureHigh , temperatureArrLength, &index);
+    writeCurrent(current, &index);
+    writeSOC(soc, &index);
+    
+    while(PIE1bits.TXIE); //can't start until buffer is empty
     uartEnable();
-    while(PIE1bits.TXIE);
 }
 
-void writeVoltages(float volts[], int length, float totalVoltage){
+void writeSOC(float soc, int *index){
+    *index += sprintf(&str[*index], "SOC = %0.4f percent \n\r", (soc*100));
+}
+
+void writeVoltages(float volts[], int length, float totalVoltage, int balanceEn[], int *index){
     int maxCell = 0;
     int minCell = 0;
-    for(int k = 0; k < length; k++){
+    
+    for(int k = 0; k < length; k++){        
         if(volts[k]<volts[minCell]){
             minCell = k;
         }else if(volts[k] > volts[maxCell]){
             maxCell = k;
         }
         
-        sprintf(&str[0], "V%i = %0.4fV\n\r", k+1, volts[k]);
-        uartEnable();
-        while(PIE1bits.TXIE);
+        if(balanceEn[k]){
+            *index += sprintf(&str[*index], "V%i = %0.4fV [X]\n\r", k+1, volts[k]);
+        }else{
+            *index += sprintf(&str[*index], "V%i = %0.4fV\n\r", k+1, volts[k]);
+        }
     }
     //writes the pack voltage to the uart buffer
-    sprintf(&str[0], "Pack Voltage: %0.4fV\n\r", totalVoltage); 
-    uartEnable();
-    while(PIE1bits.TXIE);
+    *index += sprintf(&str[*index], "Pack Voltage: %0.4fV\n\r", totalVoltage); 
     
-    sprintf(&str[0], "Max Difference = V%i & V%i @ %0.4fV\n\r", minCell+1, maxCell+1, (volts[maxCell] - volts[minCell]));     
-    uartEnable();
-    while(PIE1bits.TXIE);
+    *index += sprintf(&str[*index], "Max Difference = V%i & V%i @ %0.4fV\n\r", minCell+1, maxCell+1, (volts[maxCell] - volts[minCell]));     
     
 }
 
-void writeCurrent(float current){
-    sprintf(&str[0], "current = %0.4fA\n\r", current);
-    uartEnable();
-    while(PIE1bits.TXIE);
+void writeCurrent(float current, int *index){
+    *index += sprintf(&str[*index], "current = %0.4fA\n\r", current);
 }
-void writeTemps(int temps[], int highestTemp, int numTemps){
+
+void writeTemps(int temps[], int highestTemp, int numTemps, int *index){
     for(int k = 0; k<numTemps; k++){ //loops through temperature array and writes each temp to uart buffer
-        sprintf(&str[n], "Temp%i = %iC\n\r", k+1, temps[k]); // 
-        uartEnable();
-        while(PIE1bits.TXIE);
+        *index += sprintf(&str[*index], "Temp%i = %iC\n\r", k+1, temps[k]); 
    }
 
     //writes the highest temperature to the uart buffer
-    sprintf(&str[0], "Highest Temp: %iC\n\r", highestTemp); 
-    uartEnable();
-    while(PIE1bits.TXIE);
+    *index += sprintf(&str[*index], "Highest Temp: %iC\n\r", highestTemp); 
 }
 
 void clearScreen(int numLines){

@@ -1,4 +1,4 @@
- //Custom Code Below ===============================================================================
+//Custom Code Below ===============================================================================
     //Includes
         #include "timer.h"
         #include "spi.h"
@@ -9,8 +9,8 @@
     //Prototypes
         void measureVoltages(float voltages[], float *totalVoltage, int numVoltages);
         float sumVoltages(float voltages[], int numVoltages);
-        void setDischarge(int index, char boolean);
-        void cellBalancing(float voltages[], int numVoltages);
+        void setDischarge(int index, char boolean, int balanceEn[]);
+        void cellBalancing(float voltages[], int numVoltages, int balanceEn[]);
         void LTC6804_rdstat_reg(char reg, char total_ic, char *data);
         void LTC6804_adstat();
         

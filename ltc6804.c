@@ -16,19 +16,15 @@
 REVISION HISTORY
 $Revision: 1000 $
 $Date: 2013-12-13 
-
 Copyright (c) 2013, Linear Technology Corp.(LTC)
 All rights reserved.
-
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
-
 1. Redistributions of source code must retain the above copyright notice, this
    list of conditions and the following disclaimer.
 2. Redistributions in binary form must reproduce the above copyright notice,
    this list of conditions and the following disclaimer in the documentation
    and/or other materials provided with the distribution.
-
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -39,17 +35,14 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of Linear Technology Corp.
-
 The Linear Technology Linduino is not affiliated with the official Arduino team.
 However, the Linduino is only possible because of the Arduino team's commitment
 to the open-source community.  Please, visit http://www.arduino.cc and
 http://store.arduino.cc , and consider a purchase that will help fund their
 ongoing work.
-
 Copyright 2013 Linear Technology Corp. (LTC)
 ***********************************************************/
 //! @defgroup LTC68041 LTC6804-1: Multicell Battery Monitor
@@ -96,7 +89,7 @@ void measureVoltages(float voltages[], float *totalVoltage, int numVoltages){ //
     int errorCount = 0;
     char pecError = -1; // Initialize to fault condition -- force IC to override it
     unsigned int ltcData[1][12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};// initialize to 0V
-     
+
     LTC6804_adcv(); // Start ADC Conversions
     *totalVoltage = sumVoltages(voltages,  numVoltages);
     
@@ -111,13 +104,9 @@ void measureVoltages(float voltages[], float *totalVoltage, int numVoltages){ //
             voltages[i] = 0.0;
         }
     }
-    
-    if(errorCount <= 10){
-        cellBalancing(voltages, numVoltages);
-    }
 }
 
-void cellBalancing(float voltages[], int numVoltages){
+void cellBalancing(float voltages[], int numVoltages, int balanceEn[]){
     float minVoltage = voltages[0];
     
     for(int i = 0; i < numVoltages; i++){
@@ -128,95 +117,119 @@ void cellBalancing(float voltages[], int numVoltages){
     char boolean;
     for(int i  = 0; i < numVoltages; i++){
         boolean = (voltages[i] >= (minVoltage + 0.05));
-        setDischarge(i, boolean);
+        setDischarge(i, boolean, balanceEn);
     }
     LTC6804_wrcfg(1, configReg);
 }
 
-void setDischarge(int index, char boolean){
+void setDischarge(int index, char boolean, int balanceEn[]){
     switch(index){     
         case 0:
             if(boolean){
                 configReg[0][4]= configReg[0][4] | Discharge_Cell_1;
+                balanceEn[index] = 1;
             }else{
                 configReg[0][4]= configReg[0][4] & (~Discharge_Cell_1);
+                balanceEn[index] = 0;
             }
             break;
         case 1:
             if(boolean){
                 configReg[0][4]= configReg[0][4] | Discharge_Cell_2;
+                balanceEn[index] = 1;
             }else{
                 configReg[0][4]= configReg[0][4] & (~Discharge_Cell_2);
+                balanceEn[index] = 0;
             }
             break;
         case 2:
             if(boolean){
                 configReg[0][4]= configReg[0][4] | Discharge_Cell_3;
+                balanceEn[index] = 1;
             }else{
                 configReg[0][4]= configReg[0][4] & (~Discharge_Cell_3);
+                balanceEn[index] = 0;
             }
             break;
         case 3:
             if(boolean){
                 configReg[0][4]= configReg[0][4] | Discharge_Cell_4;
+                balanceEn[index] = 1;
             }else{
                 configReg[0][4]= configReg[0][4] & (~Discharge_Cell_4);
+                balanceEn[index] = 0;
             }
             break;
         case 4:
             if(boolean){
                 configReg[0][4]= configReg[0][4] | Discharge_Cell_5;
+                balanceEn[index] = 1;
             }else{
                 configReg[0][4]= configReg[0][4] & (~Discharge_Cell_5);
+                balanceEn[index] = 0;
             }
             break;
         case 5:
             if(boolean){
                 configReg[0][4]= configReg[0][4] | Discharge_Cell_6;
+                balanceEn[index] = 1;
             }else{
                 configReg[0][4]= configReg[0][4] & (~Discharge_Cell_6);
+                balanceEn[index] = 0;
             }
             break;
         case 6:
             if(boolean){
                 configReg[0][4]= configReg[0][4] | Discharge_Cell_7;
+                balanceEn[index] = 1;
             }else{
                 configReg[0][4]= configReg[0][4] & (~Discharge_Cell_7);
+                balanceEn[index] = 0;
             }
             break;
         case 7:
             if(boolean){
                 configReg[0][4]= configReg[0][4] | Discharge_Cell_8;
+                balanceEn[index] = 1;
             }else{
                 configReg[0][4]= configReg[0][4] & (~Discharge_Cell_8);
+                balanceEn[index] = 0;
             }
             break;
         case 8:
             if(boolean){
                 configReg[0][5]= configReg[0][5] | Discharge_Cell_9;
+                balanceEn[index] = 1;
             }else{
                 configReg[0][5]= configReg[0][5] & (~Discharge_Cell_9);
+                balanceEn[index] = 0;
             }
             break;
         case 9:
             if(boolean){
                 configReg[0][5]= configReg[0][5] | Discharge_Cell_10;
+                balanceEn[index] = 1;
             }else{
                 configReg[0][5]= configReg[0][5] & (~Discharge_Cell_10);
+                balanceEn[index] = 0;
             }
             break;
         case 10:
             if(boolean){
                 configReg[0][5]= configReg[0][5] | Discharge_Cell_11;
+                balanceEn[index] = 1;
             }else{
                 configReg[0][5]= configReg[0][5] & (~Discharge_Cell_11);
+                balanceEn[index] = 0;
             }
             break;
         case 11:
             if(boolean){
                 configReg[0][5]= configReg[0][5] | Discharge_Cell_12;
+                balanceEn[index] = 1;
             }else{
                 configReg[0][5]= configReg[0][5] & (~Discharge_Cell_12);
+                balanceEn[index] = 0;
             }
             break;
         default:
@@ -294,7 +307,6 @@ void LTC6804_adstat() //Start status register conversion
 
 /*!
   \brief This function will initialize all 6804 variables and the SPI port.
-
   This function will initialize the Linduino to communicate with the LTC6804 with a 1MHz SPI clock.
   The Function also intializes the ADCV and ADAX commands to convert all cell and GPIO voltages in
   the Normal ADC mode.
@@ -316,7 +328,6 @@ void LTC6804_initialize()
  
 Command Code:
 -------------
-
 |command	|  15   |  14   |  13   |  12   |  11   |  10   |   9   |   8   |   7   |   6   |   5   |   4   |   3   |   2   |   1   |   0   | 
 |-----------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|
 |ADCV:	    |   0   |   0   |   0   |   0   |   0   |   0   |   1   | MD[1] | MD[2] |   1   |   1   |  DCP  |   0   | CH[2] | CH[1] | CH[0] | 
@@ -413,7 +424,6 @@ void LTC6804_adcv()
  
 Command Code:
 -------------
-
 |CMD[0:1]	|  15   |  14   |  13   |  12   |  11   |  10   |   9   |   8   |   7   |   6   |   5   |   4   |   3   |   2   |   1   |   0   | 
 |-----------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|
 |ADAX:	    |   0   |   0   |   0   |   0   |   0   |   1   |   0   | MD[1] | MD[2] |   1   |   1   |  DCP  |   0   | CHG[2]| CHG[1]| CHG[0]| 
@@ -451,7 +461,6 @@ void LTC6804_adax()
  The function is used to read the cell codes of the LTC6804.
  This function will send the requested read commands parse the data
  and store the cell voltages in cell_codes variable. 
-
  @param[in] char reg; This controls which cell voltage register is read back. 
  
           0: Read back all Cell registers 
@@ -604,19 +613,16 @@ return(pec_error);
           4: Read back cell group D 
 		  		  		  
  @param[in] uint8_t total_ic; This is the number of ICs in the daisy chain(-1 only)
-
  @param[out] uint8_t *data; An array of the unparsed cell codes 
  
 Command Code:
 -------------
-
 |CMD[0:1]	|  15   |  14   |  13   |  12   |  11   |  10   |   9   |   8   |   7   |   6   |   5   |   4   |   3   |   2   |   1   |   0   | 
 |-----------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|
 |RDCVA:	    |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   1   |   0   |   0   |
 |RDCVB:	    |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   1   |   1   |   0   | 
 |RDCVC:	    |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   1   |   0   |   0   |   0   | 
 |RDCVD:	    |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   1   |   0   |   1   |   0   |  
-
  *************************************************/
 void LTC6804_rdcv_reg(char reg, //Determines which cell voltage register is read back
 					  char total_ic, //the number of ICs in the
@@ -678,7 +684,6 @@ void LTC6804_rdcv_reg(char reg, //Determines which cell voltage register is read
  The function is used
  to read the  parsed GPIO codes of the LTC6804. This function will send the requested 
  read commands parse the data and store the gpio voltages in aux_codes variable 
-
 @param[in] uint8_t reg; This controls which GPIO voltage register is read back. 
 		  
           0: Read back all auxiliary registers 
@@ -690,7 +695,6 @@ void LTC6804_rdcv_reg(char reg, //Determines which cell voltage register is read
  
 @param[in] uint8_t total_ic; This is the number of ICs in the daisy chain(-1 only) 
  
-
  @param[out] uint16_t aux_codes[][6]; A two dimensional array of the gpio voltage codes. The GPIO codes will
  be stored in the aux_codes[][6] array in the following format:
  |  aux_codes[0][0]| aux_codes[0][1] |  aux_codes[0][2]|  aux_codes[0][3]|  aux_codes[0][4]|  aux_codes[0][5]| aux_codes[1][0] |aux_codes[1][1]|  .....    |
@@ -824,7 +828,6 @@ char LTC6804_rdaux(char reg, //Determines which GPIO voltage register is read ba
           1: Read back auxiliary group A
 		  
           2: Read back auxiliary group B 
-
          
 @param[in] uint8_t total_ic; This is the number of ICs in the daisy chain
  
@@ -834,12 +837,10 @@ char LTC6804_rdaux(char reg, //Determines which GPIO voltage register is read ba
  
 Command Code:
 -------------
-
 |CMD[0:1]	    |  15   |  14   |  13   |  12   |  11   |  10   |   9   |   8   |   7   |   6   |   5   |   4   |   3   |   2   |   1   |   0   | 
 |---------------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|
 |RDAUXA:	    |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   1   |   1   |   0   |   0   |
 |RDAUXB:	    |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   1   |   1   |   1   |   0   | 
-
  *************************************************/
 void LTC6804_rdaux_reg(char reg, //Determines which GPIO voltage register is read back
 					   char total_ic, //The number of ICs in the system
@@ -897,7 +898,6 @@ void LTC6804_rdaux_reg(char reg, //Determines which GPIO voltage register is rea
  
 Command Code:
 ------------- 
-
 |CMD[0:1]	    |  15   |  14   |  13   |  12   |  11   |  10   |   9   |   8   |   7   |   6   |   5   |   4   |   3   |   2   |   1   |   0   | 
 |---------------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|
 |CLRCELL:	    |   0   |   0   |   0   |   0   |   0   |   1   |   1   |   1   |   0   |   0   |   0   |   1   |   0   |   0   |   0   |   1   |
@@ -944,7 +944,6 @@ void LTC6804_clrcell()
  
 Command Code:
 -------------
-
 |CMD[0:1]	    |  15   |  14   |  13   |  12   |  11   |  10   |   9   |   8   |   7   |   6   |   5   |   4   |   3   |   2   |   1   |   0   | 
 |---------------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|
 |CLRAUX:	    |   0   |   0   |   0   |   0   |   0   |   1   |   1   |   1   |   0   |   0   |   0   |   1   |   0   |   0   |   2   |   0   |
@@ -1068,26 +1067,19 @@ void LTC6804_wrcfg(char total_ic, //The number of ICs being written to
  \brief Reads configuration registers of a LTC6804 daisy chain
  
 @param[in] uint8_t total_ic: number of ICs in the daisy chain
-
 @param[out] uint8_t r_config[][8] is a two dimensional array that the function stores the read configuration data. The configuration data for each IC 
 is stored in blocks of 8 bytes with the configuration data of the lowest IC on the stack in the first 8 bytes 
 block of the array, the second IC in the second 8 byte etc. Below is an table illustrating the array organization:
-
 |r_config[0][0]|r_config[0][1]|r_config[0][2]|r_config[0][3]|r_config[0][4]|r_config[0][5]|r_config[0][6]  |r_config[0][7] |r_config[1][0]|r_config[1][1]|  .....    |
 |--------------|--------------|--------------|--------------|--------------|--------------|----------------|---------------|--------------|--------------|-----------|
 |IC1 CFGR0     |IC1 CFGR1     |IC1 CFGR2     |IC1 CFGR3     |IC1 CFGR4     |IC1 CFGR5     |IC1 PEC High    |IC1 PEC Low    |IC2 CFGR0     |IC2 CFGR1     |  .....    |
-
-
 @return int8_t, PEC Status.
  
 	0: Data read back has matching PEC
  
 	-1: Data read back has incorrect PEC
-
-
 Command Code:
 -------------
-
 |CMD[0:1]		|  15   |  14   |  13   |  12   |  11   |  10   |   9   |   8   |   7   |   6   |   5   |   4   |   3   |   2   |   1   |   0   | 
 |---------------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|
 |RDCFG:	        |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   1   |   0   |   0   |   1   |   0   |
@@ -1152,7 +1144,6 @@ char LTC6804_rdcfg(char total_ic, //Number of ICs in the system
 	  a. load configuration data into r_config array
 	  b. calculate PEC of received data and compare against calculated PEC
 	5. Return PEC Error
-
 */
 
 /*!****************************************************
@@ -1184,7 +1175,6 @@ void wakeup_sleep()
                
   @param[in] uint8_t data[] : the array of data that the PEC will be generated from
   
-
   @returns The calculated pec15 as an unsigned int
 ***********************************************************/
 int pec15_calc(char len, //Number of bytes that will be used to calculate a PEC
@@ -1222,12 +1212,10 @@ void spi_write_array(char len, // Option: Number of bytes to be written on the S
 
 /*!
  \brief Writes and read a set number of bytes using the SPI port.
-
 @param[in] uint8_t tx_data[] array of data to be written on the SPI port
 @param[in] uint8_t tx_len length of the tx_data array
 @param[out] uint8_t rx_data array that read data will be written too. 
 @param[in] uint8_t rx_len number of bytes to be read from the SPI port.
-
 */
 
 void spi_write_read(char tx_Data[],//array of data to be written on SPI port 

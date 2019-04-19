@@ -9441,4 +9441,3 @@ void timer0Setup(){
 OPTION_REG = 0b10001110;
 INTCONbits.TMR0IE = 1;
 }
-

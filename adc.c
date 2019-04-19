@@ -12,8 +12,6 @@
 int calculateTemp(int adcValue){
     float voltage = (((float)adcValue/4096.0)*5.0);
     return temperatures[(int)(voltage*10)]; //using lookup table for temperatures
-    //float r = (voltage * 10000.0 / (5.0 - voltage));
-    //return (int)(((t0 * Beta)/(t0*log(r / 10000.0) + Beta))-273); //Log function is slow...wait to approximate?
 }
 
 float calculateCurrent(float adcValue){
@@ -29,16 +27,16 @@ float getCurrent(){
 }
 
 //Returns the highest temperature
-int getTemps(int temperatures[], int numTemps){
+int getTemps(int temps[], int numTemps){
     int highestTemp = 0;
     
     TEMPFET = 0; //Enable temperature readings
     highestTemp = calculateTemp(adcRead(tempChannels[0])); //Read first temp sensor (TEMP1))
-    temperatures[0] = highestTemp; //Save value into temperature array
-    for(int inc = 1; inc < numTemps; inc ++){ //Read all of the other temp sensors
-        temperatures[inc] = calculateTemp(adcRead(tempChannels[inc])); //Save value into temperature array
-        if(temperatures[inc] > highestTemp){ //if the measured value is the highest yet, set it (high temp = lower voltage)
-            highestTemp = temperatures[inc];
+    temps[0] = highestTemp; //Save value into temperature array
+    for(int inc = 0; inc < numTemps; inc ++){ //Read all of the other temp sensors
+        temps[inc] = calculateTemp(adcRead(tempChannels[inc])); //Save value into temperature array
+        if(temps[inc] > highestTemp){ //if the measured value is the highest yet, set it (high temp = lower voltage)
+            highestTemp = temps[inc];
         }
     }
 

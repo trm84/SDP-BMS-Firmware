@@ -34,16 +34,16 @@
 //Defines
 
 //Variables
-    char str[50]; //Character Buffer
+    char str[500]; //Character Buffer
     int n; //Array Location
     
 //Prototypes
-    void writeValuesToUart(float voltageArr[], int voltageArrLength, float totalVoltage, int temperatureArr[], int temperatureArrLength, int temperatureHigh, float current, float soc, int uartLines);
+    void writeValuesToUart(float voltageArr[], int voltageArrLength, float totalVoltage, int balanceEn[], int temperatureArr[], int temperatureArrLength, int temperatureHigh, float current, float soc, int uartLines);
     void uartSetup();
-    void writeVoltages(float volts[], int length, float totalVoltage);
-    void writeTemps(int temps[], int highestTemp, int numTemps);
+    void writeVoltages(float volts[], int length, float totalVoltage, int balanceEn[], int *index);
+    void writeTemps(int temps[], int highestTemp, int numTemps, int *index);
     void clearScreen(int numLines);
     void uartEnable();
     void uartDisable();
-    void writeCurrent(float current);
-    void writeSOC(float soc);
+    void writeCurrent(float current, int *index);
+    void writeSOC(float soc, int *index);

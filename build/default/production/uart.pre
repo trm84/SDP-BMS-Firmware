@@ -9488,38 +9488,44 @@ extern int sprintf(char *, const char *, ...);
 extern int printf(const char *, ...);
 
 # 37 "uart.h"
-char str[50];
+char str[500];
 int n;
 
 
-void writeValuesToUart(float voltageArr[], int voltageArrLength, float totalVoltage, int temperatureArr[], int temperatureArrLength, int temperatureHigh, float current, float soc, int uartLines);
+void writeValuesToUart(float voltageArr[], int voltageArrLength, float totalVoltage, int balanceEn[], int temperatureArr[], int temperatureArrLength, int temperatureHigh, float current, float soc, int uartLines);
 void uartSetup();
-void writeVoltages(float volts[], int length, float totalVoltage);
-void writeTemps(int temps[], int highestTemp, int numTemps);
+void writeVoltages(float volts[], int length, float totalVoltage, int balanceEn[], int *index);
+void writeTemps(int temps[], int highestTemp, int numTemps, int *index);
 void clearScreen(int numLines);
 void uartEnable();
 void uartDisable();
-void writeCurrent(float current);
-void writeSOC(float soc);
+void writeCurrent(float current, int *index);
+void writeSOC(float soc, int *index);
 
 # 11 "uart.c"
-void writeValuesToUart(float voltageArr[], int voltageArrLength, float totalVoltage, int temperatureArr[], int temperatureArrLength, int temperatureHigh, float current, float soc, int uartLines){
-clearScreen(uartLines);
-writeVoltages(voltageArr, voltageArrLength, totalVoltage);
-writeTemps(temperatureArr, temperatureHigh , temperatureArrLength);
-writeCurrent(current);
-writeSOC(soc);
-}
+void writeValuesToUart(float voltageArr[], int voltageArrLength, float totalVoltage, int balanceEn[], int temperatureArr[], int temperatureArrLength, int temperatureHigh, float current, float soc, int uartLines){
+int index = 0;
 
-void writeSOC(float soc){
-sprintf(&str[0], "SOC = %0.4f percent \n\r", (soc*100));
-uartEnable();
 while(PIE1bits.TXIE);
+clearScreen(uartLines);
+
+writeVoltages(voltageArr, voltageArrLength, totalVoltage, balanceEn, &index);
+writeTemps(temperatureArr, temperatureHigh , temperatureArrLength, &index);
+writeCurrent(current, &index);
+writeSOC(soc, &index);
+
+while(PIE1bits.TXIE);
+uartEnable();
 }
 
-void writeVoltages(float volts[], int length, float totalVoltage){
+void writeSOC(float soc, int *index){
+*index += sprintf(&str[*index], "SOC = %0.4f percent \n\r", (soc*100));
+}
+
+void writeVoltages(float volts[], int length, float totalVoltage, int balanceEn[], int *index){
 int maxCell = 0;
 int minCell = 0;
+
 for(int k = 0; k < length; k++){
 if(volts[k]<volts[minCell]){
 minCell = k;
@@ -9527,37 +9533,30 @@ minCell = k;
 maxCell = k;
 }
 
-sprintf(&str[0], "V%i = %0.4fV\n\r", k+1, volts[k]);
-uartEnable();
-while(PIE1bits.TXIE);
+if(balanceEn[k]){
+*index += sprintf(&str[*index], "V%i = %0.4fV [X]\n\r", k+1, volts[k]);
+}else{
+*index += sprintf(&str[*index], "V%i = %0.4fV\n\r", k+1, volts[k]);
+}
 }
 
-sprintf(&str[0], "Pack Voltage: %0.4fV\n\r", totalVoltage);
-uartEnable();
-while(PIE1bits.TXIE);
+*index += sprintf(&str[*index], "Pack Voltage: %0.4fV\n\r", totalVoltage);
 
-sprintf(&str[0], "Max Difference = V%i & V%i @ %0.4fV\n\r", minCell+1, maxCell+1, (volts[maxCell] - volts[minCell]));
-uartEnable();
-while(PIE1bits.TXIE);
+*index += sprintf(&str[*index], "Max Difference = V%i & V%i @ %0.4fV\n\r", minCell+1, maxCell+1, (volts[maxCell] - volts[minCell]));
 
 }
 
-void writeCurrent(float current){
-sprintf(&str[0], "current = %0.4fA\n\r", current);
-uartEnable();
-while(PIE1bits.TXIE);
+void writeCurrent(float current, int *index){
+*index += sprintf(&str[*index], "current = %0.4fA\n\r", current);
 }
-void writeTemps(int temps[], int highestTemp, int numTemps){
+
+void writeTemps(int temps[], int highestTemp, int numTemps, int *index){
 for(int k = 0; k<numTemps; k++){
-sprintf(&str[n], "Temp%i = %iC\n\r", k+1, temps[k]);
-uartEnable();
-while(PIE1bits.TXIE);
+*index += sprintf(&str[*index], "Temp%i = %iC\n\r", k+1, temps[k]);
 }
 
 
-sprintf(&str[0], "Highest Temp: %iC\n\r", highestTemp);
-uartEnable();
-while(PIE1bits.TXIE);
+*index += sprintf(&str[*index], "Highest Temp: %iC\n\r", highestTemp);
 }
 
 void clearScreen(int numLines){

@@ -9506,8 +9506,8 @@ void spiSwitch();
 # 10 "ltc6804.h"
 void measureVoltages(float voltages[], float *totalVoltage, int numVoltages);
 float sumVoltages(float voltages[], int numVoltages);
-void setDischarge(int index, char boolean);
-void cellBalancing(float voltages[], int numVoltages);
+void setDischarge(int index, char boolean, int balanceEn[]);
+void cellBalancing(float voltages[], int numVoltages, int balanceEn[]);
 void LTC6804_rdstat_reg(char reg, char total_ic, char *data);
 void LTC6804_adstat();
 
@@ -9634,19 +9634,19 @@ void timer2Setup();
 void timerSetup();
 
 # 37 "uart.h"
-char str[50];
+char str[500];
 int n;
 
 
-void writeValuesToUart(float voltageArr[], int voltageArrLength, float totalVoltage, int temperatureArr[], int temperatureArrLength, int temperatureHigh, float current, float soc, int uartLines);
+void writeValuesToUart(float voltageArr[], int voltageArrLength, float totalVoltage, int balanceEn[], int temperatureArr[], int temperatureArrLength, int temperatureHigh, float current, float soc, int uartLines);
 void uartSetup();
-void writeVoltages(float volts[], int length, float totalVoltage);
-void writeTemps(int temps[], int highestTemp, int numTemps);
+void writeVoltages(float volts[], int length, float totalVoltage, int balanceEn[], int *index);
+void writeTemps(int temps[], int highestTemp, int numTemps, int *index);
 void clearScreen(int numLines);
 void uartEnable();
 void uartDisable();
-void writeCurrent(float current);
-void writeSOC(float soc);
+void writeCurrent(float current, int *index);
+void writeSOC(float soc, int *index);
 
 # 38 "timer.h"
 void timer0Setup();
@@ -9862,8 +9862,10 @@ int j = 0, k = 0 , z = 0;
 int uartBool = 0;
 int currentBool = 0;
 
-# 48
+
 void main(void){
+int balanceEn[12];
+
 float voltages[12];
 float totalVoltage;
 
@@ -9871,7 +9873,7 @@ int currentIndex = 0;
 float currentBuff[20];
 float current = 0;
 
-int temps[5];
+int temps[5] = {20, 20, 20, 20, 20};
 int highestTemp;
 
 int numFaults = 0;
@@ -9887,12 +9889,13 @@ _delay((unsigned long)((1000)*(32000000/4000.0)));
 LATDbits.LATD5 = startUp(&highestTemp, temps, voltages, &totalVoltage, &current, &soc);
 LATDbits.LATD5 = 1;
 
-# 80
+# 77
 while(1){
 
 
 
 LATAbits.LATA5 ^= 1;
+
 
 
 
@@ -9904,10 +9907,9 @@ if(currentBool == 1){
 currentBuff[currentIndex] = getCurrent();
 currentIndex ++;
 if(currentIndex >= 20){
-cellBalancing(voltages, 12);
 current = avgBuff(currentBuff, currentIndex);
 
-soc = ((((soc)*(float)total_capacity) - (current/500.0))/((float)(total_capacity)));
+soc = ((((soc)*(float)total_capacity) - (current/500))/((float)(total_capacity)));
 
 currentIndex = 0;
 }
@@ -9937,7 +9939,8 @@ LATDbits.LATD5 = 0;
 
 
 if(uartBool == 1){
-writeValuesToUart(voltages, 12, totalVoltage, temps, 5, highestTemp, current, soc, 22);
+cellBalancing(voltages, 12, balanceEn);
+writeValuesToUart(voltages, 12, totalVoltage, balanceEn, temps, 5, highestTemp, current, soc, 25);
 uartBool = 0;
 }
 
@@ -9946,7 +9949,7 @@ uartBool = 0;
 }
 }
 
-# 144
+# 142
 int startUp(int *highestTemp, int temps[], float voltages[], float *totalVoltage, float *current, float *soc){
 measureVoltages(voltages, totalVoltage, 12);
 for(int i = 0; i < 12; i++){
@@ -9981,7 +9984,7 @@ char running(){
 return 1;
 }
 
-# 183
+# 181
 void __interrupt ISR(void){
 
 if(INTCONbits.TMR0IF == 1 && INTCONbits.TMR0IE == 1){
@@ -10020,7 +10023,7 @@ PIR1bits.SSP1IF = 0;
 
 }
 
-# 225
+# 223
 void setup(void){
 
 TRISDbits.TRISD4 = 0;

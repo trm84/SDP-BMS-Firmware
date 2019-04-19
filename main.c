@@ -26,7 +26,7 @@
     #define DISCHARGE_EN LATDbits.LATD5 //Discharge Enable Pin
     #define CHARGE_EN  LATDbits.LATD4 //Charge Enable Pin
     #define CHARGE_SWITCH PORTAbits.RA0
-    #define UART_LINES 22
+    #define UART_LINES 25
     #define TEST_LED LATAbits.LATA5
 
 //Prototypes
@@ -38,14 +38,11 @@
     int j = 0, k = 0 , z = 0; //incrementing variables
     int uartBool = 0; //Timer  enabled bool to write to UART for testing
     int currentBool = 0; //Measuring Current bool
-    
-    
-    
-    
-    
-    
+
 //Main
 void main(void){    
+    int balanceEn[NUM_VOLTAGES]; //Keep track of cells that are being balanced
+    
     float voltages[NUM_VOLTAGES]; //Voltages
     float totalVoltage; //Total Voltage
     
@@ -53,7 +50,7 @@ void main(void){
     float currentBuff[NUM_CURRENT]; //Buffer to store current values
     float current = 0; //Current 
     
-    int temps[NUM_TEMPS]; //Temperatures
+    int temps[NUM_TEMPS] = {20, 20, 20, 20, 20}; //Temperatures
     int highestTemp; //Highest Temperature
 
     int numFaults = 0; //Number of faults
@@ -85,6 +82,7 @@ void main(void){
         
         /*MEASUREMENTS*/
         //VOLTAGE
+       //
         measureVoltages(voltages, &totalVoltage, NUM_VOLTAGES); // Voltages 
         //TEMPERATURE
         highestTemp = getTemps(temps, NUM_TEMPS); // Temperatures
@@ -93,10 +91,9 @@ void main(void){
             currentBuff[currentIndex] = getCurrent();
             currentIndex ++;
             if(currentIndex >= NUM_CURRENT){ //Average buffer to get finalized current value
-                cellBalancing(voltages, NUM_VOLTAGES); //Balance 
                 current = avgBuff(currentBuff, currentIndex);
                 
-                soc = ((((soc)*(float)total_capacity) - (current/500.0))/((float)(total_capacity)));
+                soc = ((((soc)*(float)total_capacity) - (current/500))/((float)(total_capacity)));
                 
                 currentIndex = 0;
             }
@@ -105,8 +102,8 @@ void main(void){
         /*END MEASUREMENTS*/
         
         /*FAULT CHECKING*/
-        //TEMPERATURE
-        for(int i = 0; i <NUM_TEMPS; i++){
+        //TEMPERATURE 
+       for(int i = 0; i <NUM_TEMPS; i++){
             if(temps[i] >= 40 || temps[i] <= 10){
                 numFaults++;
             }
@@ -126,7 +123,8 @@ void main(void){
        /*WRITE DATA TO DISP*/
         //UART
         if(uartBool == 1){ //UART
-            writeValuesToUart(voltages, NUM_VOLTAGES, totalVoltage, temps, NUM_TEMPS, highestTemp, current, soc, UART_LINES);
+            cellBalancing(voltages, NUM_VOLTAGES, balanceEn); //Balance the cells
+            writeValuesToUart(voltages, NUM_VOLTAGES, totalVoltage, balanceEn, temps, NUM_TEMPS, highestTemp, current, soc, UART_LINES);
             uartBool = 0;
         }
         //I2C
@@ -212,7 +210,7 @@ void __interrupt ISR(void){
         }
     }
     //SPI
-    if(PIR1bits.SSP1IF == 1 && PIE1bits.SSP1IE == 1){
+    if(PIR1bits.SSP1IF == 1 && PIE1bits.SSP1IE == 1){ //not using the interrupt
         PIR1bits.SSP1IF = 0;
     }
      
@@ -261,5 +259,5 @@ void setup(void){
        spiSetup();
 
     //LTC
-        LTC6804_initialize();
+       LTC6804_initialize();
 }
